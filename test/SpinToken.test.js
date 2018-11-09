@@ -12,6 +12,9 @@ require('chai')
 const WEI = 10**18;
 
 contract('SpinToken', function ([_, creator]) {
+  console.log("_", _);
+  console.log("creator", creator);
+
   const name = "SPIN Protocol";
   const symbol = "SPIN";
   const decimals = 18;
@@ -19,6 +22,7 @@ contract('SpinToken', function ([_, creator]) {
 
   beforeEach(async function() {
     this.token = await SpinToken.new(name, symbol, decimals, initialSupply, { from: creator });
+    // console.log("this.token.address", this.token.address);
   });
 
   it('has a name', async function () {
@@ -45,14 +49,19 @@ contract('SpinToken', function ([_, creator]) {
 
     const receipt = await web3.eth.getTransactionReceipt(this.token.transactionHash);
     const logs = decodeLogs(receipt.logs, SpinToken, this.token.address);
-    logs.length.should.equal(2);
+    // console.log("token.address:", this.token.address);
+    logs.length.should.equal(3);
+    // Call MinterRole
     logs[0].event.should.equal('MinterAdded');
     logs[0].args.account.valueOf().should.equal(creator);
-
-    logs[1].event.should.equal('Transfer');
-    logs[1].args.from.valueOf().should.equal(ZERO_ADDRESS);
-    logs[1].args.to.valueOf().should.equal(creator);
-    logs[1].args.value.should.be.bignumber.equal(totalSupply);
+    // Call PauserRole#
+    logs[1].event.should.equal('PauserAdded');
+    logs[1].args.account.valueOf().should.equal(creator);
+    // Call IERC20#Transfer(address indexed from, address indexed to, uint256 value)
+    logs[2].event.should.equal('Transfer');
+    logs[2].args.from.valueOf().should.equal(ZERO_ADDRESS);
+    logs[2].args.to.valueOf().should.equal(creator);
+    logs[2].args.value.should.be.bignumber.equal(totalSupply);
   });
 
 })
