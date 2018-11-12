@@ -18,7 +18,7 @@ contract('SpinToken', function ([_, creator]) {
   const name = "SPIN Protocol";
   const symbol = "SPIN";
   const decimals = 18;
-  const initialSupply = 1250 * WEI;
+  const initialSupply = 1250000000 * WEI;
 
   beforeEach(async function() {
     this.token = await SpinToken.new(name, symbol, decimals, initialSupply, { from: creator });
@@ -37,8 +37,8 @@ contract('SpinToken', function ([_, creator]) {
     (await this.token.decimals()).should.be.bignumber.equal(18);
   });
 
-  it('has 1250 * 10**18 initialSupply', async function () {
-    (await this.token.totalSupply()).should.be.bignumber.equal(1250 * WEI);
+  it('has 1250000000 * 10**18 initialSupply', async function () {
+    (await this.token.totalSupply()).should.be.bignumber.equal(1250000000 * WEI);
   });
 
   it('assigns the initial total supply to the creator', async function () {
