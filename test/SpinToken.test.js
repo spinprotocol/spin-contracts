@@ -9,7 +9,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const WEI = 10**18;
+// const WEI = 10**18;
 
 contract('SpinToken', function ([_, creator]) {
   console.log("_", _);
@@ -18,7 +18,7 @@ contract('SpinToken', function ([_, creator]) {
   const name = "SPIN Protocol";
   const symbol = "SPIN";
   const decimals = 18;
-  const initialSupply = 1250 * WEI;
+  const initialSupply = 1250;
 
   beforeEach(async function() {
     this.token = await SpinToken.new(name, symbol, decimals, initialSupply, { from: creator });
