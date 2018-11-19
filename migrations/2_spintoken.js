@@ -8,5 +8,5 @@ const decimals = 18;
 const initialSupply = 1250000000;
 
 module.exports = function(deployer) {
-  deployer.deploy(SpinToken, name, symbol, decimals, initialSupply);
+  //deployer.deploy(SpinToken, name, symbol, decimals, initialSupply);
 }
