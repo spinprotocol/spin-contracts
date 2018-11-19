@@ -29,20 +29,20 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
    * @param name
    * @param symbol
    * @param decimals
-   * @param initialSupply
+   * @param supply
    */
   constructor(
     string name,
     string symbol,
     uint8 decimals,
-    uint256 initialSupply
+    uint256 supply
   )
     ERC20Detailed(name, symbol, decimals)
     public
   {
     // Mint the initial supply
-    require(initialSupply > 0, "initialSupply must be greater than zero.");
-    mint(msg.sender, initialSupply * _UNIT);
+    require(supply > 0, "Supply must be greater than zero.");
+    mint(msg.sender, supply * _UNIT);
   }
 
   /**
