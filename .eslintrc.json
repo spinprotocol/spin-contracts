@@ -41,11 +41,8 @@
       "no-var": "error",
       "object-curly-spacing": ["error", "always"],
       "prefer-const": "error",
-      "quotes": ["error", "double"],
-      "semi": ["error", "always"],
-      "space-before-function-paren": ["error", "always"],
-
-      "promise/always-return": "off",
-      "promise/avoid-new": "off"
+      "quotes": ["warning", "double"],
+      "semi": ["warning", "always"],
+      "space-before-function-paren": ["error", "always"]
     }
 }
