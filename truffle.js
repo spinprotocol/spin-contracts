@@ -1,55 +1,40 @@
 require('dotenv').config();
-
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
-const providerWithMnemonic = (mnemonic, rpcEndpoint) =>
-  new HDWalletProvider(mnemonic, rpcEndpoint);
+const providerWithMnemonic = (mnemonic, providerURL) =>
+  new HDWalletProvider(mnemonic, providerURL);
 
-const infuraProvider = network => providerWithMnemonic(
-  process.env.MNEMONIC || '',
+const providerFactory = network => providerWithMnemonic(
+  process.env.MNEMONICS || '',
   `https://${network}.infura.io/${process.env.INFURA_API_KEY}`
 );
 
-const ropstenProvider = process.env.SOLIDITY_COVERAGE
-  ? undefined
-  : infuraProvider('ropsten');
-
-const rinkeybProvider = process.env.SOLIDITY_COVERAGE
-  ? undefined
-  : infuraProvider('rinkeby');
 
 module.exports = {
-  // See <http://truffleframework.com/docs/advanced/configuration>
-  // to customize your Truffle configuration!
   networks: {
-    // development: {
-    //   host: 'localhost',
-    //   port: 8545,
-    //   network_id: '*', // eslint-disable-line camelcase
-    // },
-    ropsten: {
-      provider: ropstenProvider,
-      network_id: 3, // eslint-disable-line camelcase
-      // , gas: 4500000
-      // , gasPrice : 10000000000
+    'mainnet': {
+      provider: providerFactory('mainnet'),
+      network_id: 1,
+      gas: 4700000,
+      gasPrice: 100000000000 // 100 Gwei, Change this value according to price average of the deployment time
     },
-    rinkeby: {
-      provider: rinkeybProvider,
-      network_id: 4, // eslint-disable-line camelcase
-      // , gas: 6700000
-      // , gasPrice: 10000000000
+    'ropsten': {
+      provider: providerFactory('ropsten'),
+      network_id: 3,
+      gas: 4700000,
+      gasPrice: 50000000000 // 50 Gwei
     },
-    // coverage: {
-    //   host: 'localhost',
-    //   network_id: '*', // eslint-disable-line camelcase
-    //   port: 8555,
-    //   gas: 0xfffffffffff,
-    //   gasPrice: 0x01,
-    // },
-    // ganache: {
-    //   host: 'localhost',
-    //   port: 7545,
-    //   network_id: '*', // eslint-disable-line camelcase
-    // }
+    'rinkeby': {
+      provider: providerFactory('rinkeby'),
+      network_id: 4,
+      gas: 4700000,
+      gasPrice: 50000000000 // 50 Gwei
+    },
+    'kovan': {
+      provider: providerFactory('kovan'),
+      network_id: 42,
+      gas: 4700000,
+      gasPrice: 50000000000  // 50 Gwei
+    }
   }
 };
