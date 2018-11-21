@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeErc20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
@@ -41,8 +40,8 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
   }
 
   /**
-   * @dev Locks a specified amount of tokens against an address,
-   *      for a specified reason and time
+   * @dev Locks a specified amount of tokens against the
+   *      sender's address for a specified reason and time
    * @param reason The reason to lock tokens
    * @param amount Number of tokens to be locked
    * @param time Lock time in seconds
@@ -70,50 +69,58 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
   }
 
   /**
-   * @dev Returns tokens locked for a specified address for a specified reason
-   * @param _of The address whose tokens are locked
-   * @param reason The reason to query the lock tokens for
+   * @dev Transfers and Locks a specified amount of tokens,
+   *      for a specified reason and time
+   * @param to adress to which tokens are to be transfered
+   * @param reason The reason to lock tokens
+   * @param amount Number of tokens to be transfered and locked
+   * @param time Lock time in seconds
    */
-  function tokensLocked(address _of, bytes32 reason)
+  function transferWithLock(address to, bytes32 reason, uint256 amount, uint256 time)
     public
-    view
-    returns (uint256 amount)
+    returns (bool)
   {
-    if (!locked[_of][reason].claimed) {
-      amount = locked[_of][reason].amount;
+    uint256 validUntil = now.add(time); //solhint-disable-line
+
+    require(tokensLocked(to, reason) == 0, _ALREADY_LOCKED);
+    require(amount != 0, _AMOUNT_ZERO);
+
+    if (locked[to][reason].amount == 0) {
+        lockReason[to].push(reason);
     }
+
+    transfer(address(this), amount);
+
+    locked[to][reason] = lockToken(amount, validUntil, false);
+
+    emit Locked(to, reason, amount, validUntil);
+    return true;
   }
 
   /**
-   * @dev Returns tokens locked for a specified address for a
-   *      specified reason at a specific time
-   * @param _of The address whose tokens are locked
-   * @param reason The reason to query the lock tokens for
-   * @param time The timestamp to query the lock tokens for
+   * @dev Unlocks the unlockable tokens of a specified address
+   * @param _of Address of user, claiming back unlockable tokens
    */
-  function tokensLockedAtTime(address _of, bytes32 reason, uint256 time)
+  function unlock(address _of)
     public
-    view
-    returns (uint256 amount)
+    returns (uint256 unlockableTokens)
   {
-    if (locked[_of][reason].validity > time) {
-      amount = locked[_of][reason].amount;
-    }
-  }
-
-  /**
-   * @dev Returns total tokens held by an address (locked + transferable)
-   * @param _of The address to query the total balance of
-   */
-  function totalBalanceOf(address _of)
-    public
-    view
-    returns (uint256 amount)
-  {
-    amount = balanceOf(_of);
+    uint256 lockedTokens;
 
     for (uint256 i = 0; i < lockReason[_of].length; i++) {
-      amount = amount.add(tokensLocked(_of, lockReason[_of][i]));
+      lockedTokens = tokensUnlockable(_of, lockReason[_of][i]);
+      if (lockedTokens > 0) {
+        unlockableTokens = unlockableTokens.add(lockedTokens);
+        locked[_of][lockReason[_of][i]].claimed = true;
+        emit Unlocked(_of, lockReason[_of][i], lockedTokens);
+      }
+    }
+
+    if (unlockableTokens > 0) {
+      // Notice that calling `transfer` with `this` results in external call
+      // so that the `msg` params are not passed to the call. By this way,
+      // token contract can send tokens to the caller of this function
+      this.transfer(_of, unlockableTokens);
     }
   }
 
@@ -153,7 +160,59 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
   }
 
   /**
-   * @dev Returns unlockable tokens for a specified address for a specified reason
+   * @dev Returns tokens under lock (but not claimed yet) 
+   *      regardless of the fact that the validity expired or not 
+   *      for a specified address for a specified reason
+   * @param _of The address whose tokens are locked
+   * @param reason The reason to query the lock tokens for
+   */
+  function tokensLocked(address _of, bytes32 reason)
+    public
+    view
+    returns (uint256 amount)
+  {
+    if (!locked[_of][reason].claimed) {
+      amount = locked[_of][reason].amount;
+    }
+  }
+
+  /**
+   * @dev Returns tokens locked for a specified address for a
+   *      specified reason at a specific time regardless of
+   *      the fact that they're claimed or not
+   * @param _of The address whose tokens are locked
+   * @param reason The reason to query the lock tokens for
+   * @param time The timestamp to query the lock tokens for
+   */
+  function tokensLockedAtTime(address _of, bytes32 reason, uint256 time)
+    public
+    view
+    returns (uint256 amount)
+  {
+    if (locked[_of][reason].validity > time) {
+      amount = locked[_of][reason].amount;
+    }
+  }
+
+  /**
+   * @dev Returns total tokens held by an address (locked + transferable)
+   * @param _of The address to query the total balance of
+   */
+  function totalBalanceOf(address _of)
+    public
+    view
+    returns (uint256 amount)
+  {
+    amount = balanceOf(_of);
+
+    for (uint256 i = 0; i < lockReason[_of].length; i++) {
+      amount = amount.add(tokensLocked(_of, lockReason[_of][i]));
+    }
+  }
+
+  /**
+   * @dev Returns tokens that their validity expired but not claimed yet
+   *      for a specified address for a specified reason
    * @param _of The address to query the the unlockable token count of
    * @param reason The reason to query the unlockable tokens for
    */
@@ -164,30 +223,6 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
   {
     if (locked[_of][reason].validity <= now && !locked[_of][reason].claimed) {  //solhint-disable-line
       amount = locked[_of][reason].amount;
-    }
-  }
-
-  /**
-   * @dev Unlocks the unlockable tokens of a specified address
-   * @param _of Address of user, claiming back unlockable tokens
-   */
-  function unlock(address _of)
-    public
-    returns (uint256 unlockableTokens)
-  {
-    uint256 lockedTokens;
-
-    for (uint256 i = 0; i < lockReason[_of].length; i++) {
-      lockedTokens = tokensUnlockable(_of, lockReason[_of][i]);
-      if (lockedTokens > 0) {
-        unlockableTokens = unlockableTokens.add(lockedTokens);
-        locked[_of][lockReason[_of][i]].claimed = true;
-        emit Unlocked(_of, lockReason[_of][i], lockedTokens);
-      }
-    }
-
-    if (unlockableTokens > 0) {
-      this.transfer(_of, unlockableTokens);
     }
   }
 
@@ -203,34 +238,5 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
     for (uint256 i = 0; i < lockReason[_of].length; i++) {
       unlockableTokens = unlockableTokens.add(tokensUnlockable(_of, lockReason[_of][i]));
     }
-  }
-
-
-  /**
-   * @dev Transfers and Locks a specified amount of tokens,
-   *      for a specified reason and time
-   * @param to adress to which tokens are to be transfered
-   * @param reason The reason to lock tokens
-   * @param amount Number of tokens to be transfered and locked
-   * @param time Lock time in seconds
-   */
-  function transferWithLock(address to, bytes32 reason, uint256 amount, uint256 time)
-    public
-    returns (bool)
-  {
-    uint256 validUntil = now.add(time); //solhint-disable-line
-
-    require(tokensLocked(to, reason) == 0, _ALREADY_LOCKED);
-    require(amount != 0, _AMOUNT_ZERO);
-
-    if (locked[to][reason].amount == 0)
-        lockReason[to].push(reason);
-
-    transfer(address(this), amount);
-
-    locked[to][reason] = lockToken(amount, validUntil, false);
-
-    emit Locked(to, reason, amount, validUntil);
-    return true;
   }
 }
