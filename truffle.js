@@ -1,12 +1,10 @@
 require('dotenv').config();
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
-const providerWithMnemonic = (mnemonic, providerURL) =>
-  new HDWalletProvider(mnemonic, providerURL);
 
-const providerFactory = network => providerWithMnemonic(
-  process.env.MNEMONICS || '',
-  `https://${network}.infura.io/${process.env.INFURA_API_KEY}`
+const providerFactory = network => new HDWalletProvider(
+  process.env.MNEMONICS || '',                                  // Mnemonic of the deployer
+  `https://${network}.infura.io/${process.env.INFURA_API_KEY}`  // Provider URL => web3.HttpProvider
 );
 
 

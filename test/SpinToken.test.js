@@ -1,6 +1,6 @@
 const { decodeLogs } = require('./utils/decodeLogs');
 const { ZERO_ADDRESS } = require('./utils/constants');
-const { getCurrentTimestamp } = require('./utils/blockData');
+const { getCurrentTimestamp, increaseTime } = require('./utils/evm');
 const SpinToken = artifacts.require('SpinToken');
 const BigNumber = web3.BigNumber;
 require('chai')
@@ -22,17 +22,6 @@ contract('SpinToken', ([creator, receiver, thirdParty]) => {
   const approveAmount = new BigNumber('10e18');  // 10 SPIN tokens
   const lockPeriod = new BigNumber(1000); // 1000 seconds
   const extendedLockPeriod = new BigNumber(500); // 500 seconds
-
-  // Increase the block hight of local testnet 
-  // manually to mock the real-time block generation
-  const increaseTime = function(duration, id) {
-    web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_increaseTime',
-        params: [duration],
-        id
-    });
-  };
 
 
   beforeEach(async () => {
@@ -294,7 +283,7 @@ contract('SpinToken', ([creator, receiver, thirdParty]) => {
 
       // Wind forward EVM block time
       let lockedToken = await this.token.locked(creator, lockReason);
-      await increaseTime(lockedToken[1].sub(currentTimestamp), 0);
+      await increaseTime(lockedToken[1].sub(currentTimestamp).toNumber());
 
       // Compare the amount of unlockable tokens at the end 
       // of lock period with the initially locked token
@@ -322,16 +311,38 @@ contract('SpinToken', ([creator, receiver, thirdParty]) => {
       let lockedToken = await this.token.locked(receiver, lockReason);
       lockedToken[0].should.be.bignumber.equal(transferAmount);
 
-      // TODO: To complete the rest of this test,
-      // comment out the previous test and run the test again.
+      // Wind forward EVM block time
+      await increaseTime(lockedToken[1].sub(currentTimestamp).toNumber());
+      let receiverPreBalance = await this.token.balanceOf(receiver);
+      // And finally unlock the tokens
+      await this.token.unlock(receiver);
+      let receiverPostBalance = await this.token.balanceOf(receiver);
+      receiverPostBalance.should.be.bignumber.equal(receiverPreBalance.add(transferAmount));
+    });
 
-      // // Wind forward EVM block time
-      // await increaseTime(lockedToken[1].sub(currentTimestamp), 1);
-      // let receiverPreBalance = await this.token.balanceOf(receiver);
-      // // And finally unlock the tokens
-      // await this.token.unlock(receiver);
-      // let receiverPostBalance = await this.token.balanceOf(receiver);
-      // receiverPostBalance.should.be.bignumber.equal(receiverPreBalance.add(transferAmount));
+    it('increases the amount of tokens locked for a thirdparty', async () => {
+      // First transferAndLock some tokens
+      await this.token.transferWithLock(receiver, lockReason, lockedAmount, lockPeriod, {from: creator}).should.be.fulfilled;
+      let actualLockAmount = await this.token.tokensLocked(receiver, lockReason);
+
+      actualLockAmount.should.be.bignumber.equal(lockedAmount);
+
+      // Check whether if the sender's balance is reduced by the amount of token locked
+      creatorPostBalance = await this.token.balanceOf(creator);
+      creatorPostBalance.should.be.bignumber.equal(creatorPreBalance.sub(lockedAmount));
+      creatorPreBalance = creatorPostBalance;
+
+      await this.token.increaseLockAmountFor(receiver, lockReason, transferAmount, {from: creator}).should.be.fulfilled;
+      let increasedLockAmount = await this.token.tokensLocked(receiver, lockReason);
+
+      increasedLockAmount.should.be.bignumber.equal(lockedAmount.add(transferAmount));
+
+      // Check whether if the sender's balance is reduced by the amount of token locked additionally
+      creatorPostBalance = await this.token.balanceOf(creator);
+      creatorPostBalance.should.be.bignumber.equal(creatorPreBalance.sub(transferAmount));
+
+      // Compare the pre-locked amount and increased lock amount
+      increasedLockAmount.should.be.bignumber.equal(actualLockAmount.add(transferAmount));
     });
 
     it('extends lock period for an existing lock', async () => {

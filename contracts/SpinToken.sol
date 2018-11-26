@@ -8,9 +8,6 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 import "./ERC1132.sol";
 
 contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable, ERC1132 {
-  using SafeERC20 for IERC20;
-
-
   /**
    * @dev Error messages for require statements
    */
@@ -147,16 +144,35 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
    * @param amount Number of tokens to be increased
    */
   function increaseLockAmount(bytes32 reason, uint256 amount)
-      public
-      returns (bool)
+    public
+    returns (bool)
   {
-      require(tokensLocked(msg.sender, reason) > 0, _NOT_LOCKED);
-      transfer(address(this), amount);
+    require(tokensLocked(msg.sender, reason) > 0, _NOT_LOCKED);
+    transfer(address(this), amount);
 
-      locked[msg.sender][reason].amount = locked[msg.sender][reason].amount.add(amount);
+    locked[msg.sender][reason].amount = locked[msg.sender][reason].amount.add(amount);
 
-      emit Locked(msg.sender, reason, locked[msg.sender][reason].amount, locked[msg.sender][reason].validity);
-      return true;
+    emit Locked(msg.sender, reason, locked[msg.sender][reason].amount, locked[msg.sender][reason].validity);
+    return true;
+  }
+
+  /**
+   * @dev Increase number of tokens locked for a specified reason against an address
+   * @param to Adress to which tokens are to be transfered
+   * @param reason The reason to lock tokens
+   * @param amount Number of tokens to be increased
+   */
+  function increaseLockAmountFor(address to, bytes32 reason, uint256 amount)
+    public
+    returns (bool)
+  {
+    require(tokensLocked(to, reason) > 0, _NOT_LOCKED);
+    transfer(address(this), amount);
+
+    locked[to][reason].amount = locked[to][reason].amount.add(amount);
+
+    emit Locked(to, reason, locked[to][reason].amount, locked[to][reason].validity);
+    return true;
   }
 
   /**
