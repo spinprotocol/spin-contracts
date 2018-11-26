@@ -54,6 +54,17 @@ contract ERC1132 {
      */
     function lock(bytes32 _reason, uint256 _amount, uint256 _time)
         public returns (bool);
+
+    /**
+     * @dev Transfers and Locks a specified amount of tokens,
+     *      for a specified reason and time
+     * @param _to adress to which tokens are to be transfered
+     * @param _reason The reason to lock tokens
+     * @param _amount Number of tokens to be transfered and locked
+     * @param _time Lock time in seconds
+     */
+    function transferWithLock(address _to, bytes32 _reason, uint256 _amount, uint256 _time)
+        public returns (bool);
   
     /**
      * @dev Returns tokens locked for a specified address for a
@@ -99,6 +110,14 @@ contract ERC1132 {
     function increaseLockAmount(bytes32 _reason, uint256 _amount)
         public returns (bool);
 
+    /**
+    * @dev Increase number of tokens locked for a specified reason against an address
+    * @param to Adress to which tokens are to be transfered
+    * @param reason The reason to lock tokens
+    * @param amount Number of tokens to be increased
+    */
+    function increaseLockAmountFor(address to, bytes32 reason, uint256 amount)
+        public returns (bool);
     /**
      * @dev Returns unlockable tokens for a specified address for a specified reason
      * @param _of The address to query the the unlockable token count of

@@ -4,19 +4,19 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Crowdsale.sol";
 import "./CappedCrowdsale.sol";
 import "./PhasedCrowdsale.sol";
-import "./Whitelisted";
+import "./Whitelisted.sol";
 import "./ERC1132.sol";
 
 
 contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelisted {
   using SafeMath for uint256;
 
-  string internal constant _REASON_VESTING_1ST_PARTY = "vesting_1st_party";
-  string internal constant _REASON_VESTING_2ND_PARTY = "vesting_2nd_party";
-  string internal constant _REASON_VESTING_3RD_PARTY = "vesting_3rd_party";
-  string internal constant _REASON_VESTING_4TH_PARTY = "vesting_4th_party";
-  string internal constant _REASON_CROWDSALE = "crowdsale";
-  string internal constant _REASON_BONUS = "bonus";
+  bytes32 internal constant _REASON_VESTING_1ST_PARTY = "vesting_1st_party";
+  bytes32 internal constant _REASON_VESTING_2ND_PARTY = "vesting_2nd_party";
+  bytes32 internal constant _REASON_VESTING_3RD_PARTY = "vesting_3rd_party";
+  bytes32 internal constant _REASON_VESTING_4TH_PARTY = "vesting_4th_party";
+  bytes32 internal constant _REASON_CROWDSALE = "crowdsale";
+  bytes32 internal constant _REASON_BONUS = "bonus";
   mapping(bytes32 => uint256) internal lockPeriods;
 
 
@@ -26,12 +26,12 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
     CappedCrowdsale(totalSaleCap) 
   {
     // TODO: Fix the lock periods!!!
-    lockPeriods[_REASON_VESTING_1ST_PARTY] = block.timestamp;
-    lockPeriods[_REASON_VESTING_2ND_PARTY] = block.timestamp;
-    lockPeriods[_REASON_VESTING_3RD_PARTY] = block.timestamp;
-    lockPeriods[_REASON_VESTING_4TH_PARTY] = block.timestamp;
-    lockPeriods[_REASON_CROWDSALE] = block.timestamp;
-    lockPeriods[_REASON_BONUS] = block.timestamp;
+    lockPeriods[_REASON_VESTING_1ST_PARTY] = 1 hours;
+    lockPeriods[_REASON_VESTING_2ND_PARTY] = 2 hours;
+    lockPeriods[_REASON_VESTING_3RD_PARTY] = 3 hours;
+    lockPeriods[_REASON_VESTING_4TH_PARTY] = 4 hours;
+    lockPeriods[_REASON_CROWDSALE] = 10 minutes;
+    lockPeriods[_REASON_BONUS] = 20 minutes;
   }
 
   /**
@@ -44,6 +44,7 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
     uint256[] dedicatedTokens
   )
     external
+    onlyAdmin
   {
     for (uint i = 0; i < dedicatedAccounts.length; i++) {
       _vestTokens(dedicatedAccounts[i], dedicatedTokens[i]);
@@ -57,7 +58,7 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
    */
   function releaseTokens(address[] accounts) external {
     for (uint256 i = 0; i < accounts.length; i++) {
-      _token.unlock(accounts[i]); 
+      token().unlock(accounts[i]);
     }
   }
 
@@ -74,31 +75,31 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
   )
     internal
   {
-    _token.transferWithLock(
+    token().transferWithLock(
       beneficiary,
-      tokenAmount,
       _REASON_VESTING_1ST_PARTY,
+      tokenAmount,
       lockPeriods[_REASON_VESTING_1ST_PARTY]
     );
 
-    _token.transferWithLock(
+    token().transferWithLock(
       beneficiary,
-      tokenAmount,
       _REASON_VESTING_2ND_PARTY,
+      tokenAmount,
       lockPeriods[_REASON_VESTING_2ND_PARTY]
     );
 
-    _token.transferWithLock(
+    token().transferWithLock(
       beneficiary,
-      tokenAmount,
       _REASON_VESTING_3RD_PARTY,
+      tokenAmount,
       lockPeriods[_REASON_VESTING_3RD_PARTY]
     );
 
-    _token.transferWithLock(
+    token().transferWithLock(
       beneficiary,
-      tokenAmount,
       _REASON_VESTING_4TH_PARTY,
+      tokenAmount,
       lockPeriods[_REASON_VESTING_4TH_PARTY]
     );
   }
@@ -136,17 +137,17 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
     uint256 bonusAmount = _calculateBonus(tokenAmount, phaseBonusRate());
 
     // Transfer and lock purchased tokens
-    if (_token.tokensLocked(beneficiary, _REASON_CROWDSALE) == 0) {
-      _token.transferWithLock(beneficiary, tokenAmount, _REASON_CROWDSALE, lockPeriods[_REASON_CROWDSALE]);
+    if (token().tokensLocked(beneficiary, _REASON_CROWDSALE) == 0) {
+      token().transferWithLock(beneficiary, _REASON_CROWDSALE, tokenAmount, lockPeriods[_REASON_CROWDSALE]);
     } else {
-      _token.increaseLockAmountFor(beneficiary, tokenAmount, _REASON_CROWDSALE);
+      token().increaseLockAmountFor(beneficiary, _REASON_CROWDSALE, tokenAmount);
     }
 
     // Transfer and lock bonus tokens
-    if (_token.tokensLocked(beneficiary, _REASON_BONUS) == 0) {
-      _token.transferWithLock(beneficiary, bonusAmount, _REASON_BONUS, lockPeriods[_REASON_BONUS]);
+    if (token().tokensLocked(beneficiary, _REASON_BONUS) == 0) {
+      token().transferWithLock(beneficiary, _REASON_BONUS, bonusAmount, lockPeriods[_REASON_BONUS]);
     } else {
-      _token.increaseLockAmountFor(beneficiary, bonusAmount, _REASON_BONUS);
+      token().increaseLockAmountFor(beneficiary, _REASON_BONUS, bonusAmount);
     }
   }
 
@@ -158,18 +159,16 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
   function _getTokenAmount(uint256 weiAmount)
     internal view returns (uint256)
   {
-    // TODO: Consider divisor
-    return weiAmount.mul(_rate);
+    return weiAmount.mul(rate());
   }
 
   /**
    * @param tokenAmount Token amount to be invested
-   * @param bonusRate Bonus rate in percentage
+   * @param bonusRate Bonus rate in percentage multiplied by 100
    */
   function _calculateBonus(uint256 tokenAmount, uint256 bonusRate)
     private pure returns (uint256)
   {
-    // TODO: Consider divisor
-    return tokenAmount.mul(bonusRate);
+    return tokenAmount.mul(bonusRate).div(10000);
   }
 }

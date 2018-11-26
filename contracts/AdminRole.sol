@@ -38,6 +38,6 @@ contract AdminRole {
 
   function _removeAdmin(address account) internal {
     admins.remove(account);
-    emit PhaseRemoved(account);
+    emit AdminRemoved(account);
   }
 }

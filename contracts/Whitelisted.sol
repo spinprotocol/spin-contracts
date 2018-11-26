@@ -28,6 +28,12 @@ contract Whitelisted is AdminRole {
     emit AddedToWhitelist(account);
   }
 
+  function addWhitelist(address[] accounts) external {
+    for (uint i = 0; i < accounts.length; i++) {
+      addToWhitelist(accounts[i]);
+    }
+  }
+
   function removeFromWhitelist(address account) public onlyAdmin {
     whitelist.remove(account);
     emit RemovedFromWhitelist(account);

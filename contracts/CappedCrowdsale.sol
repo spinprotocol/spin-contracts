@@ -17,6 +17,8 @@ contract CappedCrowdsale is Crowdsale, AdminRole {
   uint256 private _maxIndividualCap;
   uint256 private _minIndividualCap;
 
+  event IndividualCapsSet(uint256 minCap, uint256 maxCap);
+
 
   constructor(uint256 totalSaleCap) internal {
     require(totalSaleCap > 0);
@@ -40,6 +42,8 @@ contract CappedCrowdsale is Crowdsale, AdminRole {
   {
     _minIndividualCap = minCap;
     _maxIndividualCap = maxCap;
+
+    emit IndividualCapsSet(minCap, maxCap);
   }
 
   /**
@@ -75,7 +79,7 @@ contract CappedCrowdsale is Crowdsale, AdminRole {
     view
     returns (uint256, uint256)
   {
-    return {_minIndividualCap, _maxIndividualCap};
+    return (_minIndividualCap, _maxIndividualCap);
   }
 
   /**

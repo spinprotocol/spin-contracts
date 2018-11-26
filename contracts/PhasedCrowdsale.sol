@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
+import "./Crowdsale.sol";
 import "./AdminRole.sol";
 
 /**
@@ -35,8 +35,8 @@ contract PhasedCrowdsale is Crowdsale, AdminRole {
 
   constructor() internal {
       _phaseIndex = 0;
-      _phaseStartTime = block.timestamp;
-      _phaseEndTime = block.timestamp + 1;
+      _phaseStartTime = 0;
+      _phaseEndTime = 0;
       _phaseBonusRate = 0;
   }
 
@@ -71,26 +71,26 @@ contract PhasedCrowdsale is Crowdsale, AdminRole {
 
   /**
    * @dev Sets phase variables
-   * @param phaseStartTime Phase start time
-   * @param phaseEndTime Phase end time
-   * @param phaseBonusRate Phase bonus rate
+   * @param startTime Phase start time
+   * @param endTime Phase end time
+   * @param bonusRate Phase bonus ratei in percentage multiplied by 100
    */
   function setPhase(
-    uint256 phaseStartTime,
-    uint256 phaseEndTime,
-    uint256 phaseBonusRate
+    uint256 startTime,
+    uint256 endTime,
+    uint256 bonusRate
   )
     public
     onlyAdmin
     onlyWhilePhaseDeactive
   {
     // solium-disable-next-line security/no-block-members
-    require(phaseStartTime >= block.timestamp);
-    require(phaseEndTime > phaseStartTime);
+    require(startTime >= block.timestamp);
+    require(endTime > startTime);
 
-    _phaseStartTime = phaseStartTime;
-    _phaseEndTime = phaseEndTime;
-    _phaseBonusRate = phaseBonusRate;
+    _phaseStartTime = startTime;
+    _phaseEndTime = endTime;
+    _phaseBonusRate = bonusRate;
 
     _phaseIndex++;
   }
