@@ -23,15 +23,28 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
   constructor(uint256 rate, address wallet, ERC1132 token, uint256 totalSaleCap)
     public
     Crowdsale(rate, wallet, token)
-    CappedCrowdsale(totalSaleCap) 
+    CappedCrowdsale(totalSaleCap)
   {
     // TODO: Fix the lock periods!!!
-    lockPeriods[_REASON_VESTING_1ST_PARTY] = 1 hours;
-    lockPeriods[_REASON_VESTING_2ND_PARTY] = 2 hours;
-    lockPeriods[_REASON_VESTING_3RD_PARTY] = 3 hours;
-    lockPeriods[_REASON_VESTING_4TH_PARTY] = 4 hours;
-    lockPeriods[_REASON_CROWDSALE] = 10 minutes;
-    lockPeriods[_REASON_BONUS] = 20 minutes;
+    lockPeriods[_REASON_VESTING_1ST_PARTY] = 360 days;
+    lockPeriods[_REASON_VESTING_2ND_PARTY] = 480 days;
+    lockPeriods[_REASON_VESTING_3RD_PARTY] = 600 days;
+    lockPeriods[_REASON_VESTING_4TH_PARTY] = 720 days;
+    lockPeriods[_REASON_CROWDSALE] = 30 days;
+    lockPeriods[_REASON_BONUS] = 60 days;
+  }
+
+  /**
+   * @dev Used for testnet deployments
+   * @param periods Lock periods
+   */
+  function setLockPeriods(uint256[] periods) external onlyAdmin {
+    lockPeriods[_REASON_CROWDSALE] = periods[0];
+    lockPeriods[_REASON_BONUS] = periods[1];
+    lockPeriods[_REASON_VESTING_1ST_PARTY] = periods[2];
+    lockPeriods[_REASON_VESTING_2ND_PARTY] = periods[3];
+    lockPeriods[_REASON_VESTING_3RD_PARTY] = periods[4];
+    lockPeriods[_REASON_VESTING_4TH_PARTY] = periods[5];
   }
 
   /**
