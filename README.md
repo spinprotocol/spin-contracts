@@ -9,9 +9,11 @@ Smart-contracts for SPIN Protocol platform
 `truffle compile`
 4. Set mnemonic words for deployer in your command line as follows;
 `export MNEMONICS="<mnemonic_words>"`
-5. And also set your infura project secret key as follows;
+5. And set your infura project secret key as follows;
 `export INFURA_API_KEY="<infura_project_secret>"`
-6. Finally deploy the contract on the network you desire
+6. Also set fund collector address as follows;
+`export FUND_COLLECTOR_ADDRESS="<fund_collector_address>"`
+7. Finally deploy the contract on the network you desire
 `truffle migrate --network <network_name>`
 
 

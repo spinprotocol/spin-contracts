@@ -43,22 +43,29 @@ contract PhasedCrowdsale is Crowdsale, AdminRole {
   /**
    * @return phase start time.
    */
-  function phaseStartTime() public view returns(uint256) {
+  function phaseStartTime() public view returns (uint256) {
     return _phaseStartTime;
   }
 
   /**
    * @return phase end time.
    */
-  function phaseEndTime() public view returns(uint256) {
+  function phaseEndTime() public view returns (uint256) {
     return _phaseEndTime;
   }
 
   /**
    * @return phase bonus rate.
    */
-  function phaseBonusRate() public view returns(uint256) {
+  function phaseBonusRate() public view returns (uint256) {
     return _phaseBonusRate;
+  }
+
+  /**
+   * @return phase index.
+   */
+  function phaseIndex() public view returns (uint256) {
+    return _phaseIndex;
   }
 
   /**
@@ -71,11 +78,13 @@ contract PhasedCrowdsale is Crowdsale, AdminRole {
 
   /**
    * @dev Sets phase variables
+   * @param purchaseRate Purchase rate
    * @param startTime Phase start time
    * @param endTime Phase end time
    * @param bonusRate Phase bonus ratei in percentage multiplied by 100
    */
   function setPhase(
+    uint256 purchaseRate,
     uint256 startTime,
     uint256 endTime,
     uint256 bonusRate
@@ -88,6 +97,7 @@ contract PhasedCrowdsale is Crowdsale, AdminRole {
     require(startTime >= block.timestamp);
     require(endTime > startTime);
 
+    super._setRate(purchaseRate);
     _phaseStartTime = startTime;
     _phaseEndTime = endTime;
     _phaseBonusRate = bonusRate;

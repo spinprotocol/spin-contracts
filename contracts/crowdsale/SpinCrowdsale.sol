@@ -5,10 +5,11 @@ import "./Crowdsale.sol";
 import "./CappedCrowdsale.sol";
 import "./PhasedCrowdsale.sol";
 import "./Whitelisted.sol";
-import "./ERC1132.sol";
+import "./Withdrawable.sol";
+import "../token/ERC1132.sol";
 
 
-contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelisted {
+contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelisted, Withdrawable {
   using SafeMath for uint256;
 
   bytes32 internal constant _REASON_VESTING_1ST_PARTY = "vesting_1st_party";
@@ -23,15 +24,38 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Whitelist
   constructor(uint256 rate, address wallet, ERC1132 token, uint256 totalSaleCap)
     public
     Crowdsale(rate, wallet, token)
-    CappedCrowdsale(totalSaleCap) 
+    CappedCrowdsale(totalSaleCap)
   {
     // TODO: Fix the lock periods!!!
-    lockPeriods[_REASON_VESTING_1ST_PARTY] = 1 hours;
-    lockPeriods[_REASON_VESTING_2ND_PARTY] = 2 hours;
-    lockPeriods[_REASON_VESTING_3RD_PARTY] = 3 hours;
-    lockPeriods[_REASON_VESTING_4TH_PARTY] = 4 hours;
-    lockPeriods[_REASON_CROWDSALE] = 10 minutes;
-    lockPeriods[_REASON_BONUS] = 20 minutes;
+    // lockPeriods[_REASON_VESTING_1ST_PARTY] = 360 days;
+    // lockPeriods[_REASON_VESTING_2ND_PARTY] = 480 days;
+    // lockPeriods[_REASON_VESTING_3RD_PARTY] = 600 days;
+    // lockPeriods[_REASON_VESTING_4TH_PARTY] = 720 days;
+    // lockPeriods[_REASON_CROWDSALE] = 30 days;
+    // lockPeriods[_REASON_BONUS] = 60 days;
+  }
+
+  /**
+   * @dev Used for testnet deployments
+   * @param periods Lock periods
+   */
+   // TODO: Remove when deploying on Mainnet
+  function setLockPeriods(uint256[] periods) external onlyAdmin {
+    lockPeriods[_REASON_CROWDSALE] = periods[0];
+    lockPeriods[_REASON_BONUS] = periods[1];
+    lockPeriods[_REASON_VESTING_1ST_PARTY] = periods[2];
+    lockPeriods[_REASON_VESTING_2ND_PARTY] = periods[3];
+    lockPeriods[_REASON_VESTING_3RD_PARTY] = periods[4];
+    lockPeriods[_REASON_VESTING_4TH_PARTY] = periods[5];
+  }
+
+
+  function withdrawEther(uint256 amount) public onlyAdmin {
+    super._withdrawEther(amount);
+  }
+
+  function withdrawToken(uint256 amount) public onlyAdmin {
+    super._withdrawToken(address(token()), amount);
   }
 
   /**
