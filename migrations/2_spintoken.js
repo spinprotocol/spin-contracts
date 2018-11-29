@@ -31,7 +31,7 @@ module.exports = function(deployer) {
 // const SPIN_TOKEN_ADDRESS = '0x668d6d1a5be72dc477c630de38aaedc895e5019c';
 
 // Deployer
-// module.exports = (deployer) => {
+// module.exports = (deployer, network) => {
 //   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan') {
 //     deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
 //       .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
@@ -51,9 +51,9 @@ module.exports = function(deployer) {
 
 // Ropsten
 // Testnet deployment of SPIN Crowdsale contract
-// @see https://ropsten.etherscan.io/token/0x40a5aed3788279c1af41ee80c3c759f47ccbec6a
-// @see https://rinkeby.etherscan.io/token/0x40a5aed3788279c1af41ee80c3c759f47ccbec6a
-// const SPIN_CROWDSALE_ADDRESS = '0x40a5aed3788279c1af41ee80c3c759f47ccbec6a';
+// @see https://ropsten.etherscan.io/token/0x85bbaffb26e22f185ab75f730c06d507c8862241
+// @see https://rinkeby.etherscan.io/token/0x289451Ad811c7091aba0Ae313afE126a75cBE62D
+// const SPIN_CROWDSALE_ADDRESS = '0x289451Ad811c7091aba0Ae313afE126a75cBE62D';
 
 // Deployer
 // module.exports = (deployer, network) => {

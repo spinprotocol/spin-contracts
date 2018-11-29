@@ -25,7 +25,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
   // These values are for testing purposes. The values set in SpinCrowdsale 
   // contract which will be deployed in mainnet will be different.
   const PURCHASED_TOKEN_RELEASE_TIME = 600; // 10 minutes
-  const BONUS_TOKEN_RELEASE_TIME = 1200; // 20 
+  const BONUS_TOKEN_RELEASE_TIME = 1200; // 20 minutes
   const VESTING_PARTY_RELEASE_TIME = 3600 // 1 hour per vesting (incremental)
 
   const fundingAmount = ether(2); // 2 ether
@@ -59,6 +59,18 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
     });
   });
 
+  describe('Crowdsale::Admin', () => {
+    it('admin can add a new admin', async () => {
+      await this.crowdsale.addAdmin(thirdParty).should.be.fulfilled;
+      (await this.crowdsale.isAdmin(thirdParty)).should.be.true;
+    });
+
+    it('does not allow an unauthorized address to add an admin', async () => {
+      (await this.crowdsale.isAdmin(thirdPartyAlt)).should.be.false;
+      await this.crowdsale.addAdmin(thirdParty, {from: thirdPartyAlt}).should.be.rejected;
+    });
+  });
+
   describe('Crowdsale::Whitelisted', () => {
     it('admin can add account/s to whitelist', async () => {
       await this.crowdsale.addToWhitelist(funder).should.be.fulfilled;
@@ -87,6 +99,32 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
     });
   });
 
+  describe('Crowdsale::Withdrawable', () => {
+    it('admin can withdraw ether from the contract', async () => {
+      // Notice that there is no way to have ether in crowdsale contract
+      // unless, in deployment time, fund collector wallet is set as the contract itself
+      // Therefore just testing whether this function can be called or not.
+      let contractPreBalanceEth = await web3.eth.getBalance(this.crowdsale.address);
+      await this.crowdsale.withdrawToken(0).should.be.fulfilled;
+
+      let contractPostBalanceEth = await web3.eth.getBalance(this.crowdsale.address);
+      contractPostBalanceEth.should.be.bignumber.equal(contractPreBalanceEth.sub(0));
+    });
+
+    it('admin can withdraw token from the contract', async () => {
+      let contractPreBalanceToken = await this.token.balanceOf(this.crowdsale.address);
+      await this.crowdsale.withdrawToken(VESTING_TOKEN_AMOUNT).should.be.fulfilled;
+
+      let contractPostBalanceToken = await this.token.balanceOf(this.crowdsale.address);
+      contractPostBalanceToken.should.be.bignumber.equal(contractPreBalanceToken.sub(VESTING_TOKEN_AMOUNT));
+    });
+
+    it('does not allow an unauthorized account to withdraw token/ether', async () => {
+      await this.crowdsale.withdrawToken(VESTING_TOKEN_AMOUNT, {from: thirdParty}).should.be.rejected;
+      await this.crowdsale.withdrawEther(ether(0), {from: thirdParty}).should.be.rejected;
+    });
+  });
+
   describe('Crowdsale::Phased', () => {
     let walletPreBalanceEther;
     let walletPostBalanceEther;
@@ -104,6 +142,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
 
       // Start a phase
       await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
         phaseStartTime,
         SALE_PERIOD + phaseStartTime, 
         BONUS_RATE
@@ -148,6 +187,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
 
       // Start a phase
       await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
         phaseStartTime,
         SALE_PERIOD + phaseStartTime, 
         BONUS_RATE
@@ -165,6 +205,47 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       // Send some ether for purchase as `funder`
       await this.crowdsale.sendTransaction({from: funder, value: fundingAmount}).should.be.rejected;
     });
+
+    it('does not allow an unauthorized address to set a phase', async () => {
+      await increaseTime(SALE_PERIOD);
+
+      phaseStartTime = (await getCurrentTimestamp()) + 100;
+
+      // Start a phase
+      await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
+        phaseStartTime,
+        SALE_PERIOD + phaseStartTime, 
+        BONUS_RATE,
+        {from: thirdParty}
+      ).should.be.rejected;
+    });
+
+    it('does not allow to set a phase in past', async () => {
+      await increaseTime(SALE_PERIOD);
+
+      // Start a phase
+      await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
+        phaseStartTime,
+        SALE_PERIOD + phaseStartTime, 
+        BONUS_RATE
+      ).should.be.rejected;
+    });
+
+    it('does not allow to set a phase with 0 purchase rate', async () => {
+      await increaseTime(SALE_PERIOD);
+
+      phaseStartTime = (await getCurrentTimestamp()) + 100;
+
+      // Start a phase
+      await this.crowdsale.setPhase(
+        0,
+        phaseStartTime,
+        SALE_PERIOD + phaseStartTime, 
+        BONUS_RATE
+      ).should.be.rejected;
+    });
   });
 
   describe('Crowdsale::Capped', () => {
@@ -178,6 +259,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
 
       // Start a phase
       await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
         phaseStartTime,
         SALE_PERIOD + phaseStartTime, 
         BONUS_RATE
@@ -199,6 +281,10 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       let caps = await this.crowdsale.getIndividualCaps();
       caps[0].should.be.bignumber.equal(ether(1));
       caps[1].should.be.bignumber.equal(ether(5));
+    });
+
+    it('does not allow an unauthorized address to set individual caps', async () => {
+      await this.crowdsale.setIndividualCaps(ether(1), ether(5), {from: thirdParty}).should.be.rejected;
     });
 
     it('does not allow to make a purchase less than the minimum cap', async () => {
@@ -242,6 +328,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
 
       // Start a phase
       await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
         phaseStartTime,
         SALE_PERIOD + phaseStartTime, 
         BONUS_RATE
@@ -349,6 +436,15 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       thirdPartyPostBalanceToken = await this.token.balanceOf(thirdParty);
       funderPostBalanceToken.should.be.bignumber.equal(funderPreBalanceToken.add(vestAmount_funder));
       thirdPartyPostBalanceToken.should.be.bignumber.equal(thirdPartyPreBalanceToken.add(vestAmount_thirdParty));
+    });
+
+    it('does not allow an unauthorized address to vest tokens', async () => {
+      // Try to vest tokens for the dedicated accounts as an unauthorized account
+      await this.crowdsale.vestDedicatedTokens(
+        [funder, thirdParty],
+        [vestAmount_funder, vestAmount_thirdParty],
+        {from: thirdParty}
+      ).should.be.rejected;
     });
 
     it('does not release vested tokens before the vesting period expires', async () => {

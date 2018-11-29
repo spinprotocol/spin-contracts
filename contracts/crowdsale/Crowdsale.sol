@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
-import "./ERC1132.sol";
+import "../token/ERC1132.sol";
 
 /**
  * @title Crowdsale
@@ -235,5 +235,13 @@ contract Crowdsale is ReentrancyGuard {
    */
   function _forwardFunds() internal {
     _wallet.transfer(msg.value);
+  }
+
+  /**
+   * @param purchaseRate Purchase rate in unit of sold tokens
+   */
+  function _setRate(uint256 purchaseRate) internal {
+    require(purchaseRate > 0);
+    _rate = purchaseRate;
   }
 }
