@@ -33,6 +33,13 @@ module.exports = {
       network_id: 42,
       gas: 4700000,
       gasPrice: 50000000000  // 50 Gwei
-    }
+    },
+    'klaytn-aspen': { // The Aspen node should be runing on the local
+      host: '127.0.0.1',
+      port: 8551,
+      network_id: '1000',
+      gas: 20000000,
+      gasPrice: 25000000000, // 25 Gpeb is fixed for Aspen, any other gas price will cause a rejection
+    },
   }
 };
