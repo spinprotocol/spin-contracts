@@ -38,7 +38,7 @@ module.exports = {
       host: '127.0.0.1',
       port: 8551,
       network_id: '1000',
-      gas: 20000000,
+      gas: 60000000,
       gasPrice: 25000000000, // 25 Gpeb is fixed for Aspen, any other gas price will cause a rejection
     },
   }
