@@ -19,20 +19,24 @@ module.exports = function(deployer) {
 }
 
 /*************SPIN Token***************/
-// Mainnet
+// Mainnet - Ethereum
 // Mainnet deployment of SPIN Token contract
 // @see https://etherscan.io/token/0x???
 // const SPIN_TOKEN_ADDRESS = '';
 
-// Ropsten & Ropsten
+// Rinkeby & Ropsten - Ethereum
 // Testnet deployment of SPIN Token contract
 // @see https://ropsten.etherscan.io/token/0x668d6d1a5be72dc477c630de38aaedc895e5019c
 // @see https://rinkeby.etherscan.io/token/0x668d6d1a5be72dc477c630de38aaedc895e5019c
 // const SPIN_TOKEN_ADDRESS = '0x668d6d1a5be72dc477c630de38aaedc895e5019c';
 
+// Aspen - Klaytn
+// Testnet deployment of SPIN Token contract
+//  const SPIN_TOKEN_ADDRESS = '0x9ed6f09f2977944884d46c69f5c78929188dbec7';
+
 // Deployer
 // module.exports = (deployer, network) => {
-//   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan') {
+//   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'klaytn-aspen') {
 //     deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
 //       .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
 //   } else if (network === 'mainnet') {
@@ -44,20 +48,24 @@ module.exports = function(deployer) {
 
 
 /*************SPIN Crowdsale***************/
-// Mainnet
+// Mainnet - Ethereum
 // Mainnet deployment of SPIN Crowdsale contract
 // @see https://etherscan.io/token/0x
 // const SPIN_CROWDSALE_ADDRESS = '';
 
-// Ropsten
+// Rinkeby & Ropsten - Ethereum
 // Testnet deployment of SPIN Crowdsale contract
 // @see https://ropsten.etherscan.io/token/0x85bbaffb26e22f185ab75f730c06d507c8862241
 // @see https://rinkeby.etherscan.io/token/0x289451Ad811c7091aba0Ae313afE126a75cBE62D
 // const SPIN_CROWDSALE_ADDRESS = '0x289451Ad811c7091aba0Ae313afE126a75cBE62D';
 
+// Aspen - Klaytn
+// Testnet deployment of SPIN Crowdsale contract
+// const SPIN_CROWDSALE_ADDRESS = '0x377e188453818a5b55641ccdc8f253f5314d003f';
+
 // Deployer
 // module.exports = (deployer, network) => {
-//   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan') {
+//   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'klaytn-aspen') {
 //     deployer.deploy(SpinCrowdsale, rate, wallet, SPIN_TOKEN_ADDRESS, totalSaleCap)
 //     .then( _ => console.log('SPIN Crowdsale contract has been deployed successfully.'));
 //   } else if (network === 'mainnet') {
