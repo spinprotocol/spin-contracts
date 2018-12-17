@@ -1,5 +1,4 @@
 // openzeppelin-solidity/test/helpers/decodeLogs.js
-
 const SolidityEvent = require('web3/lib/web3/event.js');
 
 function decodeLogs (logs, contract, address) {

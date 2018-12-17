@@ -1,5 +1,4 @@
 // openzeppelin-solidity/test/helpers/constants.js
-
 const BigNumber = web3.BigNumber;
 
 module.exports = {
