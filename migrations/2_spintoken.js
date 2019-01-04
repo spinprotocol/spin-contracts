@@ -26,13 +26,14 @@ module.exports = function(deployer) {
 
 // Rinkeby & Ropsten - Ethereum
 // Testnet deployment of SPIN Token contract
-// @see https://ropsten.etherscan.io/token/0x668d6d1a5be72dc477c630de38aaedc895e5019c
-// @see https://rinkeby.etherscan.io/token/0x668d6d1a5be72dc477c630de38aaedc895e5019c
-// const SPIN_TOKEN_ADDRESS = '0x668d6d1a5be72dc477c630de38aaedc895e5019c';
+// @see https://ropsten.etherscan.io/token/0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba
+// const SPIN_TOKEN_ADDRESS = '0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba';
+// @see https://rinkeby.etherscan.io/token/0xd97243b693c3173b165e975fc0bc1590e6acee15
+// const SPIN_TOKEN_ADDRESS = '0xd97243b693c3173b165e975fc0bc1590e6acee15';
 
 // Aspen - Klaytn
 // Testnet deployment of SPIN Token contract
-//  const SPIN_TOKEN_ADDRESS = '0x9ed6f09f2977944884d46c69f5c78929188dbec7';
+// const SPIN_TOKEN_ADDRESS = '0x760e61a237adfe8169887e160eca8c2ca80e2aac';
 
 // Deployer
 // module.exports = (deployer, network) => {
@@ -50,18 +51,19 @@ module.exports = function(deployer) {
 /*************SPIN Crowdsale***************/
 // Mainnet - Ethereum
 // Mainnet deployment of SPIN Crowdsale contract
-// @see https://etherscan.io/token/0x
+// @see https://etherscan.io/0x
 // const SPIN_CROWDSALE_ADDRESS = '';
 
 // Rinkeby & Ropsten - Ethereum
 // Testnet deployment of SPIN Crowdsale contract
-// @see https://ropsten.etherscan.io/token/0x85bbaffb26e22f185ab75f730c06d507c8862241
-// @see https://rinkeby.etherscan.io/token/0x289451Ad811c7091aba0Ae313afE126a75cBE62D
-// const SPIN_CROWDSALE_ADDRESS = '0x289451Ad811c7091aba0Ae313afE126a75cBE62D';
+// @see https://ropsten.etherscan.io/0xce30c5b548826dc33a670a30f6a301efe129acba
+// const SPIN_CROWDSALE_ADDRESS = '0xce30c5b548826dc33a670a30f6a301efe129acba';
+// @see https://rinkeby.etherscan.io/0x440face1e4b497466057352d69e208b7b0025de4
+// const SPIN_CROWDSALE_ADDRESS = '0x440face1e4b497466057352d69e208b7b0025de4';
 
 // Aspen - Klaytn
 // Testnet deployment of SPIN Crowdsale contract
-// const SPIN_CROWDSALE_ADDRESS = '0x377e188453818a5b55641ccdc8f253f5314d003f';
+// const SPIN_CROWDSALE_ADDRESS = '0xeb23ae93c72c4318bda376362fa1f7206cda91a8';
 
 // Deployer
 // module.exports = (deployer, network) => {

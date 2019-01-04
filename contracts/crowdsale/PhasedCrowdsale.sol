@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Crowdsale.sol";
-import "./AdminRole.sol";
+import "../accessControl/AdminRole.sol";
 
 /**
  * @title PhasedCrowdsale

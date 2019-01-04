@@ -16,22 +16,29 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
   const DECIMALS = 18;
   const INITIAL_SUPPLY = new BigNumber(1250000000); // 1.25 Billion SPIN tokens
 
-  const EXCHANGE_RATE = new BigNumber(10); // 1 ether = 10 SPIN
+  const EXCHANGE_RATE = new BigNumber(1000); // 1 ether = 1000 SPIN
   const TOTAL_SALE_CAP = ether(10);
   const VESTING_TOKEN_AMOUNT = new BigNumber('4e22'); // 40,000 SPIN
-  const SALE_PERIOD = 1000; // 1000 seconds
   const BONUS_RATE = new BigNumber(2500); // 25% Bonus rate which is multiplied by 100 for better resolution
 
   // These values are for testing purposes. The values set in SpinCrowdsale 
   // contract which will be deployed in mainnet will be different.
-  const PURCHASED_TOKEN_RELEASE_TIME = 600; // 10 minutes
+  const SALE_PERIOD = 600; // 10 minutes
   const BONUS_TOKEN_RELEASE_TIME = 1200; // 20 minutes
   const VESTING_PARTY_RELEASE_TIME = 3600 // 1 hour per vesting (incremental)
 
+  const lockPeriods = new Array(6);
+  lockPeriods[0] = SALE_PERIOD;
+  lockPeriods[1] = BONUS_TOKEN_RELEASE_TIME;
+  lockPeriods[2] = VESTING_PARTY_RELEASE_TIME * 1;
+  lockPeriods[3] = VESTING_PARTY_RELEASE_TIME * 2;
+  lockPeriods[4] = VESTING_PARTY_RELEASE_TIME * 3;
+  lockPeriods[5] = VESTING_PARTY_RELEASE_TIME * 4;
+
   const fundingAmount = ether(2); // 2 ether
   const insufficientFundingAmount = ether(0.1); // 0.1 ether
-  const vestAmount_funder = new BigNumber('2.5e21');
-  const vestAmount_thirdParty = new BigNumber('1e21');
+  const vestAmount_funder = new BigNumber('2.5e21'); // 2500 SPIN
+  const vestAmount_thirdParty = new BigNumber('1e21'); // 1000 SPIN
 
 
   beforeEach(async () => {
@@ -41,8 +48,11 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
     // Fund the crowdsale contract with tokens
     await this.token.transfer(
       this.crowdsale.address,
-      TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT)
+      TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT.mul(1 + BONUS_RATE / 10000))
     );
+
+    // Set lock periods
+    await this.crowdsale.setLockPeriods(lockPeriods);
   });
 
   describe('Crowdsale', () => {
@@ -119,6 +129,24 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       contractPostBalanceToken.should.be.bignumber.equal(contractPreBalanceToken.sub(VESTING_TOKEN_AMOUNT));
     });
 
+    it('does not allow to withdraw amount of token more than the contract balance minus total locked token amount', async () => {
+      // Try to withdraw an amount of token more than the contract balance
+      await this.crowdsale.withdrawToken(
+        TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT.mul(1 + BONUS_RATE / 10000)).add(1)
+      ).should.be.rejected;
+
+      // First lock some tokens to the contract
+      await this.crowdsale.lock(
+        funder,
+        'fake_lock_reason',
+        TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT.mul(1 + BONUS_RATE / 10000)),
+        lockPeriods[0]
+      ).should.be.fulfilled;
+
+      // And try to withdraw some amount more than the contract balance minus total locked token amount
+      await this.crowdsale.withdrawToken(1).should.be.rejected;
+    });
+
     it('does not allow an unauthorized account to withdraw token/ether', async () => {
       await this.crowdsale.withdrawToken(VESTING_TOKEN_AMOUNT, {from: thirdParty}).should.be.rejected;
       await this.crowdsale.withdrawEther(ether(0), {from: thirdParty}).should.be.rejected;
@@ -128,8 +156,6 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
   describe('Crowdsale::Phased', () => {
     let walletPreBalanceEther;
     let walletPostBalanceEther;
-    let crowdsalePreBalanceToken;
-    let crowdsalePostBalanceToken;
     let phaseStartTime;
 
     beforeEach(async () => {
@@ -168,18 +194,16 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       await this.crowdsale.sendTransaction({from: funder, value: fundingAmount});
 
       // Check amount of tokens transfered and locked against funder address
-      let actualLockedTokens = await this.token.totalBalanceOf(funder);
+      let actualLockedTokens = await this.crowdsale.getTotalLockedTokens(funder);
       actualLockedTokens.should.be.bignumber.equal(tokenAmount.add(bonusAmount));
 
       // Check whether fund collector get the ether sent for purchased
       walletPostBalanceEther = await web3.eth.getBalance(wallet);
       walletPostBalanceEther.should.be.bignumber.equal(walletPreBalanceEther.add(fundingAmount));
 
-      // Check whether crowdsale token balance is reduced by the amount of token transfered and locked
-      crowdsalePostBalanceToken = await this.token.balanceOf(this.crowdsale.address);
-      crowdsalePostBalanceToken.should.be.bignumber.equal(
-        crowdsalePreBalanceToken.sub(tokenAmount.add(bonusAmount))
-      );
+      // Check whether actual locked token amount is equal to the calculated value
+      let lockedTotalTokens = await this.crowdsale.getTotalLockedTokens(funder);
+      lockedTotalTokens.should.be.bignumber.equal(tokenAmount.add(bonusAmount));
     });
 
     it('does not allow to set a phase while there is an active phase', async () => {
@@ -307,9 +331,238 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
     });
   });
 
+  describe('Crowdsale::Lockable', () => {
+    const lockReason = 'just_a_fake_reason';
+    const lockedAmount = new BigNumber('200e18'); // 200 SPIN tokens
+    const lockPeriod = 1000; // 1000 seconds
+    const extendedLockPeriod = 500; // 500 seconds
+    let conctractPreBalance;
+    let currentTimestamp;
+    let initialTotalLockedTokens;
+    let currentTotalLockedTokens;
+
+    beforeEach(async () => {
+      conctractPreBalance = await this.token.balanceOf(this.crowdsale.address);
+      initialTotalLockedTokens = await this.crowdsale.getTotalLockedAmount();
+      currentTimestamp = await getCurrentTimestamp();
+    });
+
+    it('locks token', async () => {
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockPeriod).should.be.fulfilled;
+
+      // Check the total number of locked tokens in this contract after a new lock
+      currentTotalLockedTokens = await this.crowdsale.getTotalLockedAmount();
+      currentTotalLockedTokens.should.be.bignumber.equal(initialTotalLockedTokens.add(lockedAmount));
+
+      // Check the actually locked tokens
+      let actualLockedAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+      actualLockedAmount.should.be.bignumber.equal(lockedAmount);
+
+      // Check the locked tokens after lock period
+      actualLockedAmount = await this.crowdsale.tokensLockedAtTime(
+        creator,
+        lockReason,
+        currentTimestamp + lockPeriod.valueOf() + 1 // One second after the lock period expires
+      );
+      actualLockedAmount.should.be.bignumber.equal(0);
+    });
+
+    it('unlocks tokens', async () => {
+      let funderPreBalance = await this.token.balanceOf(funder);
+
+      // First lock some tokens
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockPeriod).should.be.fulfilled;
+
+      // Check the total number of locked tokens in this contract after a new lock
+      currentTotalLockedTokens = await this.crowdsale.getTotalLockedAmount();
+      currentTotalLockedTokens.should.be.bignumber.equal(initialTotalLockedTokens.add(lockedAmount));
+      initialTotalLockedTokens = currentTotalLockedTokens;
+
+      // Check the actually locked tokens
+      let actualLockAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+      actualLockAmount.should.be.bignumber.equal(lockedAmount);
+
+      // Wind forward EVM block time
+      let lockedToken = await this.crowdsale.locked(funder, lockReason);
+      await increaseTime(lockedToken[1].sub(currentTimestamp).toNumber());
+
+      // Compare the amount of unlockable tokens at the end 
+      // of lock period with the initially locked token
+      let unlockableTokenAmount = await this.crowdsale.getUnlockableTokens(funder);
+      unlockableTokenAmount.should.be.bignumber.equal(actualLockAmount);
+
+      // And finally unlock the tokens
+      await this.crowdsale.unlock(funder).should.be.fulfilled;
+
+      // Check the total number of locked tokens in this contract after unlocking a lock
+      currentTotalLockedTokens = await this.crowdsale.getTotalLockedAmount();
+      currentTotalLockedTokens.should.be.bignumber.equal(initialTotalLockedTokens.sub(lockedAmount));
+
+      // Check if the sender's balance is increased by amount of tokens unlocked
+      let contractPostBalance = await this.token.balanceOf(this.crowdsale.address);
+      contractPostBalance.should.be.bignumber.equal(conctractPreBalance.sub(unlockableTokenAmount));
+
+      let funderPostBalance = await this.token.balanceOf(funder);
+      funderPostBalance.should.be.bignumber.equal(funderPreBalance.add(unlockableTokenAmount));
+
+      // Check, also if whether tokens are unlocked or not
+      unlockableTokenAmount = await this.crowdsale.getUnlockableTokens(funder);
+      unlockableTokenAmount.should.be.bignumber.equal(0);
+    });
+
+    it('increases the amount of tokens locked', async () => {
+      // First lock some tokens
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockPeriod).should.be.fulfilled;
+
+      // Check the actually locked tokens
+      let actualLockAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+      actualLockAmount.should.be.bignumber.equal(lockedAmount);
+
+      await this.crowdsale.increaseLockAmount(funder, lockReason, lockedAmount).should.be.fulfilled;
+      let increasedLockAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+
+      // Compare the pre-locked amount and increased lock amount
+      increasedLockAmount.should.be.bignumber.equal(actualLockAmount.add(lockedAmount));
+    });
+
+    it('extends lock period for an existing lock', async () => {
+      // Notice that `this.token.locked(...)` returns 
+      // `locked` variable from the contract which is indeed a mapping to
+      // a struct of shape of `{uint256 amount, uint256 validity, bool claimed}`
+      // therefore returned `value[0]` is equal to `amount`, `value[1]` is 
+      // equal to `validity` and `value[2]` is `claimed`.
+
+      // Lock some token first
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockPeriod).should.be.fulfilled;
+      let lockedToken = await this.crowdsale.locked(funder, lockReason);
+
+      await this.crowdsale.adjustLockPeriod(funder, lockReason, extendedLockPeriod, false).should.be.fulfilled;
+      let lockExtendedToken = await this.crowdsale.locked(funder, lockReason);
+
+      // Compare the validity of the locked tokens
+      lockExtendedToken[1].should.be.bignumber.equal(lockedToken[1].add(extendedLockPeriod));
+    });
+
+    it('shortens lock period for an existing lock', async () => {
+      // Notice that `this.token.locked(...)` returns 
+      // `locked` variable from the contract which is indeed a mapping to
+      // a struct of shape of `{uint256 amount, uint256 validity, bool claimed}`
+      // therefore returned `value[0]` is equal to `amount`, `value[1]` is 
+      // equal to `validity` and `value[2]` is `claimed`.
+
+      // Lock some token first
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockPeriod).should.be.fulfilled;
+      let lockedToken = await this.crowdsale.locked(funder, lockReason);
+
+      await this.crowdsale.adjustLockPeriod(funder, lockReason, extendedLockPeriod, true).should.be.fulfilled;
+      let lockShortenedToken = await this.crowdsale.locked(funder, lockReason);
+
+      // Compare the validity of the locked tokens
+      lockShortenedToken[1].should.be.bignumber.equal(lockedToken[1].sub(extendedLockPeriod));
+    });
+
+    it('locks tokens again after unlocking', async () => {
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockPeriod).should.be.fulfilled;
+      await increaseTime(lockPeriod + 1);
+      await this.crowdsale.unlock(funder).should.be.fulfilled;
+      await this.crowdsale.lock(funder, lockReason, lockedAmount.add(100), 0).should.be.fulfilled;
+
+      // Check the actually locked tokens
+      let actualLockAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+      actualLockAmount.should.be.bignumber.equal(lockedAmount.add(100));
+    });
+
+    it('returns 0 amount of locked token for unknown reasons', async () => {
+      let actualLockedAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+      actualLockedAmount.should.be.bignumber.equal(0);
+    });
+
+    it('does not allow unauthorized addresses to call functions of lockable feature', async () => {
+      await this.crowdsale.lock(
+        funder, 
+        lockReason, 
+        lockedAmount, 
+        lockPeriod,
+        {from: thirdParty}
+      ).should.be.rejected;
+
+      // Create a lock first
+      await this.crowdsale.lock(
+        funder, 
+        lockReason, 
+        lockedAmount, 
+        lockPeriod
+      ).should.be.fulfilled;
+
+      await this.crowdsale.adjustLockPeriod(
+        funder, 
+        lockReason,
+        lockPeriod,
+        false,
+        {from: thirdParty}
+      ).should.be.rejected;
+
+      await this.crowdsale.increaseLockAmount(
+        funder, 
+        lockReason, 
+        lockedAmount,
+        {from: thirdParty}
+      ).should.be.rejected;
+    });
+
+    it('does not allow to lock more than the contract balance', async () => {
+      // One time lock with the amount which exceeds total balance of the contract
+      await this.crowdsale.lock(
+        funder, 
+        lockReason, 
+        TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT.mul(1 + BONUS_RATE / 10000)).add(1), 
+        lockPeriod
+      ).should.be.rejected;
+
+      // Or multiple time lock with the amount which exceeds total balance of the contract
+      await this.crowdsale.lock(
+        funder, 
+        lockReason, 
+        TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT.mul(1 + BONUS_RATE / 10000)), 
+        lockPeriod
+      ).should.be.fulfilled;
+
+      await this.crowdsale.lock(
+        funder, 
+        lockReason, 
+        1, 
+        lockPeriod
+      ).should.be.rejected;
+    });
+
+    it('does not allow to increase amount of locked tokens by amount more than the contract balance', async () => {
+      // First lock exact amount of tokens as the contract balance
+      await this.crowdsale.lock(
+        funder,
+        lockReason,
+        TOTAL_SALE_CAP.mul(EXCHANGE_RATE).add(VESTING_TOKEN_AMOUNT.mul(1 + BONUS_RATE / 10000)),
+        lockPeriod
+      ).should.be.fulfilled;
+
+      // Then try to increase amount of locked tokens by any amount which will exceeds the contract balance
+      await this.crowdsale.increaseLockAmount(lockReason, 1).should.be.rejected;
+    });
+
+    it('does not allow to extend lock period and increasing lock amount for a non-existent lock', async () => {
+      // Try to extend lock which does not exist
+      await this.crowdsale.adjustLockPeriod(funder, lockReason, lockPeriod, false).should.be.rejected;
+      await this.crowdsale.adjustLockPeriod(funder, lockReason, lockPeriod, true).should.be.rejected;
+      // Try to increase lock amount for a non-existent lock
+      await this.crowdsale.increaseLockAmount(funder, lockReason, lockedAmount).should.be.rejected;
+    });
+
+    it('does not allow to lock 0 amount of token', async () => {
+      await this.crowdsale.lock(funder, lockReason, 0, lockPeriod).should.be.rejected;
+    });
+  });
+
   describe('Crowdsale::Vesting&Releasing', () => {
     let walletPreBalanceEther;
-    let crowdsalePreBalanceToken;
     let earnedToken;
 
     beforeEach(async () => {
@@ -350,10 +603,12 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       walletPostBalanceEther.should.be.bignumber.equal(walletPreBalanceEther.add(fundingAmount.mul(3)));
 
       // Check whether crowdsale token balance is reduced by the amount of total token transfered and locked
-      let crowdsalePostBalanceToken = await this.token.balanceOf(this.crowdsale.address);
-      crowdsalePostBalanceToken.should.be.bignumber.equal(
-        crowdsalePreBalanceToken.sub(earnedToken.mul(3))
-      );
+      let totalLockedTokenFunder = await this.crowdsale.getTotalLockedTokens(funder);
+      let totalLockedTokenThirdParty = await this.crowdsale.getTotalLockedTokens(thirdParty);
+      let totalLockedTokenThirdPartyAlt = await this.crowdsale.getTotalLockedTokens(thirdPartyAlt);
+      earnedToken.mul(3).should.be.bignumber.equal(totalLockedTokenFunder
+        .add(totalLockedTokenThirdParty)
+        .add(totalLockedTokenThirdPartyAlt));
 
       // Wind forward EVM blocktime to time when the all earned token locks expire
       await increaseTime(BONUS_TOKEN_RELEASE_TIME);
@@ -370,7 +625,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       thirdPartyAltPostBalance.should.be.bignumber.equal(earnedToken);
     });
 
-    it('vests tokens', async () => {
+    it('vests and releases vested tokens', async () => {
       let funderPreBalanceToken = await this.token.balanceOf(funder);
       let thirdPartyPreBalanceToken = await this.token.balanceOf(thirdParty);
 

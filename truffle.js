@@ -1,4 +1,3 @@
-require('dotenv').config();
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
 
@@ -13,33 +12,41 @@ module.exports = {
     'mainnet': {
       provider: providerFactory('mainnet'),
       network_id: 1,
-      gas: 4700000,
+      gas: 8000000,
       gasPrice: 100000000000 // 100 Gwei, Change this value according to price average of the deployment time
     },
     'ropsten': {
       provider: providerFactory('ropsten'),
       network_id: 3,
-      gas: 4700000,
+      gas: 6000000,
       gasPrice: 50000000000 // 50 Gwei
     },
     'rinkeby': {
       provider: providerFactory('rinkeby'),
       network_id: 4,
-      gas: 4700000,
+      gas: 6000000,
       gasPrice: 50000000000 // 50 Gwei
     },
     'kovan': {
       provider: providerFactory('kovan'),
       network_id: 42,
-      gas: 4700000,
+      gas: 6000000,
       gasPrice: 50000000000  // 50 Gwei
     },
-    'klaytn-aspen': { // The Aspen node should be runing on the local
+    'klaytn-aspen': { // The Aspen node should be runing on the local and also the account should be unlocked
       host: '127.0.0.1',
       port: 8551,
       network_id: '1000',
-      gas: 60000000,
+      gas: 6000000,
       gasPrice: 25000000000, // 25 Gpeb is fixed for Aspen, any other gas price will cause a rejection
     },
+  },
+  mocha: {
+    useColors: true,
+    reporter: 'eth-gas-reporter',
+    reporterOptions : {
+      currency: 'USD',
+      gasPrice: 21
+    }
   }
 };
