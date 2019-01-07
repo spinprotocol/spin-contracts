@@ -10,7 +10,7 @@ require('chai')
   .should();
 
 
-contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt]) => {
+contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, address5, address6, address7, address8]) => {
   const NAME = 'SPIN Protocol';
   const SYMBOL = 'SPIN';
   const DECIMALS = 18;
@@ -723,7 +723,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
     });
   });
 
-  describe('Gas analysis for token vesting & release', () => {
+  describe('Gas analysis for whitelisting & token vesting & release', () => {
 
     beforeEach(async () => {
       let phaseStartTime = (await getCurrentTimestamp()) + 1;
@@ -742,6 +742,22 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       // Wind EVM time forward so that the sale starts
       await increaseTime(20);
       (await this.crowdsale.isActive()).should.be.true;
+    });
+
+    it('adding one address to whitelist', async () => {
+      await this.crowdsale.addWhitelist([address5]).should.be.fulfilled;
+    });
+
+    it('adding multiple(2) addresses to whitelist', async () => {
+      await this.crowdsale.addWhitelist([address5, address6]).should.be.fulfilled;
+    });
+
+    it('adding multiple(3) addresses to whitelist', async () => {
+      await this.crowdsale.addWhitelist([address5, address6, address7]).should.be.fulfilled;
+    });
+
+    it('adding multiple(4) addresses to whitelist', async () => {
+      await this.crowdsale.addWhitelist([address5, address6, address7, address8]).should.be.fulfilled;
     });
 
     it('funding from one address', async () => {
