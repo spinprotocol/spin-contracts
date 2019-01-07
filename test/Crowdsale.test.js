@@ -722,4 +722,73 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt])
       thirdPartyPostBalanceToken.should.be.bignumber.not.equal(thirdPartyPreBalanceToken.add(vestAmount_thirdParty));
     });
   });
+
+  describe('Gas analysis for token vesting & release', () => {
+
+    beforeEach(async () => {
+      let phaseStartTime = (await getCurrentTimestamp()) + 1;
+
+      // Add funders to whitelist
+      await this.crowdsale.addWhitelist([funder, thirdParty, thirdPartyAlt]).should.be.fulfilled;
+
+      // Start a phase
+      await this.crowdsale.setPhase(
+        EXCHANGE_RATE,
+        phaseStartTime,
+        SALE_PERIOD + phaseStartTime, 
+        BONUS_RATE
+      ).should.be.fulfilled;
+
+      // Wind EVM time forward so that the sale starts
+      await increaseTime(20);
+      (await this.crowdsale.isActive()).should.be.true;
+    });
+
+    it('funding from one address', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+    });
+
+    it('multiple(2) funding from one address', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+    });
+
+    it('multiple(3) funding from one address', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+    });
+
+    it('funding from multiple(2) addresses', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: thirdParty, value: ether(2)}).should.be.fulfilled;
+    });
+
+    it('funding from multiple(3) addresses', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: thirdParty, value: ether(2)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: thirdPartyAlt, value: ether(1.5)}).should.be.fulfilled;
+    });
+
+    it('releasing for one address', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await increaseTime(BONUS_TOKEN_RELEASE_TIME);
+      await this.crowdsale.releaseTokens([funder]).should.be.fulfilled;
+    });
+
+    it('releasing for multiple(2) addresses', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: thirdParty, value: ether(2)}).should.be.fulfilled;
+      await increaseTime(BONUS_TOKEN_RELEASE_TIME);
+      await this.crowdsale.releaseTokens([funder, thirdParty]).should.be.fulfilled;
+    });
+
+    it('releasing for multiple(3) addresses', async () => {
+      await this.crowdsale.sendTransaction({from: funder, value: ether(1)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: thirdParty, value: ether(2)}).should.be.fulfilled;
+      await this.crowdsale.sendTransaction({from: thirdPartyAlt, value: ether(1.5)}).should.be.fulfilled;
+      await increaseTime(BONUS_TOKEN_RELEASE_TIME);
+      await this.crowdsale.releaseTokens([funder, thirdParty, thirdPartyAlt]).should.be.fulfilled;
+    });
+  });
 });
