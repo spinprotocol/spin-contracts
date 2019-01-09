@@ -17,7 +17,6 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   bytes32 internal constant _REASON_VESTING_2ND_PARTY = "vesting_2nd_party";
   bytes32 internal constant _REASON_VESTING_3RD_PARTY = "vesting_3rd_party";
   bytes32 internal constant _REASON_VESTING_4TH_PARTY = "vesting_4th_party";
-  bytes32 internal constant _REASON_CROWDSALE = "crowdsale";
   bytes32 internal constant _REASON_BONUS = "bonus";
   mapping(bytes32 => uint256) internal lockPeriods;
 
@@ -29,12 +28,11 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
     Lockable(token)
   {
     // TODO: Fix the lock periods!!!
-    lockPeriods[_REASON_VESTING_1ST_PARTY] = 360 days;
-    lockPeriods[_REASON_VESTING_2ND_PARTY] = 480 days;
-    lockPeriods[_REASON_VESTING_3RD_PARTY] = 600 days;
-    lockPeriods[_REASON_VESTING_4TH_PARTY] = 720 days;
-    lockPeriods[_REASON_CROWDSALE] = 30 days;
-    lockPeriods[_REASON_BONUS] = 60 days;
+    lockPeriods[_REASON_BONUS] = 1559358000;             // 2019/06/01, 12:00 PM, GMT+9
+    lockPeriods[_REASON_VESTING_1ST_PARTY] = 1583031600; // 2020/03/01, 12:00 PM, GMT+9
+    lockPeriods[_REASON_VESTING_2ND_PARTY] = 1593572400; // 2020/07/01, 12:00 PM, GMT+9
+    lockPeriods[_REASON_VESTING_3RD_PARTY] = 1604199600; // 2020/09/01, 12:00 PM, GMT+9
+    lockPeriods[_REASON_VESTING_4TH_PARTY] = 1614567600; // 2021/03/01, 12:00 PM, GMT+9
   }
 
   /**
@@ -42,12 +40,20 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
    * @param periods Lock periods
    */
   function setLockPeriods(uint256[] periods) external onlyAdmin {
-    lockPeriods[_REASON_CROWDSALE] = periods[0];
-    lockPeriods[_REASON_BONUS] = periods[1];
-    lockPeriods[_REASON_VESTING_1ST_PARTY] = periods[2];
-    lockPeriods[_REASON_VESTING_2ND_PARTY] = periods[3];
-    lockPeriods[_REASON_VESTING_3RD_PARTY] = periods[4];
-    lockPeriods[_REASON_VESTING_4TH_PARTY] = periods[5];
+    // TODO: Check for dates in the past
+    lockPeriods[_REASON_BONUS] = periods[0];
+    lockPeriods[_REASON_VESTING_1ST_PARTY] = periods[1];
+    lockPeriods[_REASON_VESTING_2ND_PARTY] = periods[2];
+    lockPeriods[_REASON_VESTING_3RD_PARTY] = periods[3];
+    lockPeriods[_REASON_VESTING_4TH_PARTY] = periods[4];
+  }
+
+  /**
+   * @dev Sets fund collector address
+   * @param wallet New fund collector address
+   */
+  function setWallet(address wallet) public onlyAdmin {
+    _setWallet(wallet);
   }
 
   /**
@@ -73,7 +79,7 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   /**
    * @dev Locks a specified amount of tokens,
    *      for a specified reason and time
-   * @param to adress to which tokens are to be transfered
+   * @param to address to which tokens are to be transfered
    * @param reason The reason to lock tokens
    * @param amount Number of tokens to be transfered and locked
    * @param time Lock time in seconds
@@ -86,9 +92,27 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   ) 
     public
     onlyAdmin
-    returns (bool)
   {
     _lock(to, reason, amount, time);
+  }
+
+  /**
+   * @dev Locks sale tokens manually for the purchases done through thirdparty ICO platforms
+   * @param beneficiaries address to which tokens are to be transfered
+   * @param tokenAmounts Number of tokens to be transfered and locked
+   * @param bonusAmounts Bonus tokens for the purchase
+   */
+  function deliverPurchasedTokensManually(
+    address[] beneficiaries, 
+    uint256[] tokenAmounts, 
+    uint256[] bonusAmounts
+  )
+    external
+    onlyAdmin
+  {
+    for (uint256 i = 0; i < beneficiaries.length; i++) {
+      _deliverPurchasedTokens(beneficiaries[i], tokenAmounts[i], bonusAmounts[i]);
+    }
   }
 
   /**
@@ -104,30 +128,25 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   ) 
     public
     onlyAdmin
-    returns (bool)
   {
-    return _increaseLockAmount(to, reason, amount);
+    _increaseLockAmount(to, reason, amount);
   }
 
   /**
    * @dev Adjust lock period for an address and a specified reason
    * @param to Address of the token receiver
    * @param reason The reason that tokens locked previously
-   * @param time Lock period adjustment in seconds
-   * @param shorten If true, shorten the lock by the given amount of seconds,
-   * otherwise, extends the lock by the given amount of seconds.
+   * @param time New date the lock expires
    */
   function adjustLockPeriod(
     address to, 
     bytes32 reason, 
-    uint256 time, 
-    bool shorten
+    uint256 time
   )
     public
     onlyAdmin
-    returns (bool)
   {
-    return _adjustLockPeriod(to, reason, time, shorten);
+    _adjustLockPeriod(to, reason, time);
   }
 
   /**
@@ -233,32 +252,7 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   {
     // Get the bonus rate for the current phase and calculate the bonus tokens
     uint256 bonusAmount = _calculateBonus(tokenAmount, phaseBonusRate());
-
-    // Lock purchased tokens
-    if (tokensLocked(beneficiary, _REASON_CROWDSALE) == 0) {
-      _lock(
-        beneficiary,
-        _REASON_CROWDSALE,
-        tokenAmount,
-        lockPeriods[_REASON_CROWDSALE]
-      );
-    } else {
-      _increaseLockAmount(beneficiary, _REASON_CROWDSALE, tokenAmount);
-    }
-
-    // Lock bonus tokens
-    if (tokensLocked(beneficiary, _REASON_BONUS) == 0) {
-      _lock(
-        beneficiary,
-        _REASON_BONUS,
-        bonusAmount,
-        lockPeriods[_REASON_BONUS]
-      );
-    } else {
-      _increaseLockAmount(beneficiary, _REASON_BONUS, bonusAmount);
-    }
-
-    // token().transfer(address(_timelock), tokenAmount.add(bonusAmount));
+    _deliverPurchasedTokens(beneficiary, tokenAmount, bonusAmount);
   }
 
   /**
@@ -280,5 +274,28 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
     private pure returns (uint256)
   {
     return tokenAmount.mul(bonusRate).div(10000);
+  }
+
+  /**
+   * @dev Locks sale tokens
+   * @param beneficiary address to which tokens are to be transfered
+   * @param tokenAmount Number of tokens to be transfered and locked
+   * @param bonusAmount Bonus amount for the purchase
+   */
+  function _deliverPurchasedTokens(address beneficiary, uint256 tokenAmount, uint256 bonusAmount) internal {
+    // Send the purchased tokens immediately
+    require(token().transfer(beneficiary, tokenAmount), 'Token transfer failed');
+
+    // Lock the bonus tokens
+    if (tokensLocked(beneficiary, _REASON_BONUS) == 0) {
+      _lock(
+        beneficiary,
+        _REASON_BONUS,
+        bonusAmount,
+        lockPeriods[_REASON_BONUS]
+      );
+    } else {
+      _increaseLockAmount(beneficiary, _REASON_BONUS, bonusAmount);
+    }
   }
 }

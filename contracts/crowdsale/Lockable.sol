@@ -64,6 +64,7 @@ contract Lockable {
   string internal constant _NOT_LOCKED = 'No tokens locked';
   string internal constant _AMOUNT_ZERO = 'Amount can not be 0';
   string internal constant _TOKEN_INSUFFICIENT = 'Token balance of this contract is insufficient';
+  string internal constant _VALIDITY_IN_PAST = 'Validity time is in past';
 
 
   constructor(IERC20 _token) internal {
@@ -82,8 +83,7 @@ contract Lockable {
     internal
     returns (bool)
   {
-    uint256 validUntil = now.add(time); //solhint-disable-line
-
+    require(time > now, _VALIDITY_IN_PAST); //solhint-disable-line
     require(tokensLocked(to, reason) == 0, _ALREADY_LOCKED);
     require(amount != 0, _AMOUNT_ZERO);
 
@@ -93,10 +93,10 @@ contract Lockable {
 
     require(erc20Token.balanceOf(address(this)) >= totalLockedAmount.add(amount), _TOKEN_INSUFFICIENT);
 
-    locked[to][reason] = lockToken(amount, validUntil, false);
+    locked[to][reason] = lockToken(amount, time, false);
     totalLockedAmount = totalLockedAmount.add(amount);
 
-    emit Locked(to, reason, amount, validUntil);
+    emit Locked(to, reason, amount, time);
     return true;
   }
 
@@ -125,20 +125,16 @@ contract Lockable {
    * @param to Address of the token receiver
    * @param reason The reason that tokens locked previously
    * @param time Lock period adjustment in seconds
-   * @param shorten If true, shorten the lock by the given amount of seconds,
    * otherwise, extends the lock by the given amount of seconds.
    */
-  function _adjustLockPeriod(address to, bytes32 reason, uint256 time, bool shorten)
+  function _adjustLockPeriod(address to, bytes32 reason, uint256 time)
     internal
     returns (bool)
   {
+    require(time > now, _VALIDITY_IN_PAST); //solhint-disable-line
     require(tokensLocked(to, reason) > 0, _NOT_LOCKED);
 
-    if (shorten) {
-      locked[to][reason].validity = locked[to][reason].validity.sub(time);
-    } else {
-      locked[to][reason].validity = locked[to][reason].validity.add(time);
-    }
+    locked[to][reason].validity = time;
 
     emit Locked(to, reason, locked[to][reason].amount, locked[to][reason].validity);
     return true;

@@ -244,4 +244,12 @@ contract Crowdsale is ReentrancyGuard {
     require(purchaseRate > 0);
     _rate = purchaseRate;
   }
+
+  /**
+   * @param wallet New fund collector address
+   */
+  function _setWallet(address wallet) internal {
+    require(wallet != address(0));
+    _wallet = wallet;
+  }
 }
