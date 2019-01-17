@@ -65,6 +65,7 @@ contract Lockable {
   string internal constant _AMOUNT_ZERO = 'Amount can not be 0';
   string internal constant _TOKEN_INSUFFICIENT = 'Token balance of this contract is insufficient';
   string internal constant _VALIDITY_IN_PAST = 'Validity time is in past';
+  string internal constant _VALIDITY_EXPIRED = 'Cannot modify a lock whose validity time is already expired';
 
 
   constructor(IERC20 _token) internal {
@@ -133,6 +134,7 @@ contract Lockable {
   {
     require(time > now, _VALIDITY_IN_PAST); //solhint-disable-line
     require(tokensLocked(to, reason) > 0, _NOT_LOCKED);
+    require(tokensUnlockable(to, reason) == 0, _VALIDITY_EXPIRED);
 
     locked[to][reason].validity = time;
 

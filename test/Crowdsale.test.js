@@ -515,6 +515,18 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
       await this.crowdsale.setLockPeriods(lockPeriods, {from: thirdParty}).should.be.rejected;
     });
 
+    it('does not allow to adjust exipry of locked tokens whose lock is already expired', async () => {
+      // First lock some tokens
+      await this.crowdsale.lock(funder, lockReason, lockedAmount, lockExpiryDate).should.be.fulfilled;
+
+      // Wind forward EVM block time to the expiry date
+      let lockedToken = await this.crowdsale.locked(funder, lockReason);
+      await increaseTime(lockedToken[1].sub(currentTimestamp).toNumber() + 1);
+
+      // Then try to increase the expiry of locked tokens whose lock is already expired
+      await this.crowdsale.adjustLockPeriod(funder, lockReason, lockExpiryDate + 10).should.be.rejected;
+    });
+
     it('does not allow to lock with an expiry date in the past', async () => {
       await this.crowdsale.lock(funder, lockReason, lockedAmount, currentTimestamp - 1).should.be.rejected;
     });
@@ -554,7 +566,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
       ).should.be.fulfilled;
 
       // Then try to increase amount of locked tokens by any amount which will exceeds the contract balance
-      await this.crowdsale.increaseLockAmount(lockReason, 1).should.be.rejected;
+      await this.crowdsale.increaseLockAmount(funder, lockReason, 1).should.be.rejected;
     });
 
     it('does not allow to adjust lock expiry to a date in the past', async () => {
