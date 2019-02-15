@@ -79,21 +79,23 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   /**
    * @dev Locks a specified amount of tokens,
    *      for a specified reason and time
-   * @param to address to which tokens are to be transfered
-   * @param reason The reason to lock tokens
-   * @param amount Number of tokens to be transfered and locked
-   * @param time Lock time in seconds
+   * @param to list of addresses to which tokens are to be transfered
+   * @param reason List of reasons to lock tokens
+   * @param amount List of amount of tokens to be locked
+   * @param time List of lock expiration times in seconds (unix epoch time)
    */
   function lock(
-    address to,
-    bytes32 reason,
-    uint256 amount,
-    uint256 time
-  ) 
-    public
+    address[] to,
+    bytes32[] reason,
+    uint256[] amount,
+    uint256[] time
+  )
+    external
     onlyAdmin
   {
-    _lock(to, reason, amount, time);
+    for (uint256 i = 0; i < to.length; i++) {
+      _lock(to[i], reason[i], amount[i], time[i]);
+    }
   }
 
   /**
@@ -217,8 +219,6 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
       tokenAmount,
       lockPeriods[_REASON_VESTING_4TH_PARTY]
     );
-
-    // token().transfer(address(_timelock), tokenAmount.mul(4));
   }
 
   /**

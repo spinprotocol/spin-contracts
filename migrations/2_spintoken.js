@@ -52,10 +52,10 @@ const TokenContractDeployer = (deployer, network) => {
 
 // Rinkeby & Ropsten - Ethereum
 // Testnet deployment of SPIN Crowdsale contract
-// @see https://ropsten.etherscan.io/0x289451ad811c7091aba0ae313afe126a75cbe62d
-// const SPIN_CROWDSALE_ADDRESS = '0x289451ad811c7091aba0ae313afe126a75cbe62d';
-// @see https://rinkeby.etherscan.io/0x3e1d06f5895db0eb24ce9b029a9e771a7878c798
-// const SPIN_CROWDSALE_ADDRESS = '0x3e1d06f5895db0eb24ce9b029a9e771a7878c798';
+// @see https://ropsten.etherscan.io/0x31ae85cf5bd649d42b00094c8c1c919c3d9f5df1
+// const SPIN_CROWDSALE_ADDRESS = '0x31ae85cf5bd649d42b00094c8c1c919c3d9f5df1';
+// @see https://rinkeby.etherscan.io/0xb9aaa48cfb66aa239974c1da53fe0e45377f5ae7
+// const SPIN_CROWDSALE_ADDRESS = '0xb9aaa48cfb66aa239974c1da53fe0e45377f5ae7';
 
 // Aspen - Klaytn
 // Testnet deployment of SPIN Crowdsale contract
