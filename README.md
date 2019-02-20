@@ -11,7 +11,7 @@ Smart-contracts for SPIN Protocol platform
 4. Also set fund collector address as follows;
 `export FUND_COLLECTOR_ADDRESS="<fund_collector_address>"`
 5. Finally deploy the contract on the network you desire
-`NETWORK=<network_name> truffle test ./test/<filename>`
+`NETWORK=<network_name> npm run deploy`
 
 
 ## Test
