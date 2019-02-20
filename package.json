@@ -14,7 +14,8 @@
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:fix": "npm run lint:js:fix && npm run lint:sol:fix",
     "console": "truffle console",
-    "coverage": "node_modules/.bin/solidity-coverage"
+    "coverage": "node_modules/.bin/solidity-coverage",
+    "deploy": "rm -rf ./build | truffle compile | truffle migrate --network $NETWORK"
   },
   "keywords": [],
   "author": "",
@@ -36,7 +37,6 @@
     "eth-gas-reporter": "^0.1.12",
     "solidity-coverage": "^0.5.11",
     "solium": "^1.1.8",
-    "truffle": "^5.0.0-next.17",
     "truffle-hdwallet-provider": "0.0.6",
     "web3": "^0.20.7"
   }

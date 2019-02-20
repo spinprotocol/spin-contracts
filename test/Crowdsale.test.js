@@ -602,6 +602,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
     let walletPreBalanceEther;
     let tokenAmount;
     let bonusAmount;
+    let currentTimestamp;
 
     beforeEach(async () => {
       walletPreBalanceEther = await web3.eth.getBalance(wallet);
@@ -620,6 +621,8 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
         SALE_PERIOD + phaseStartTime, 
         BONUS_RATE
       ).should.be.fulfilled;
+
+      currentTimestamp = await getCurrentTimestamp();
 
       // Wind EVM time forward so that the sale starts
       await increaseTime(20);
@@ -749,7 +752,8 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
       await this.crowdsale.deliverPurchasedTokensManually(
         [funder, thirdParty],
         [vestAmount_funder, vestAmount_thirdParty],
-        [funderBonus, thirdPartyBonus]
+        [funderBonus, thirdPartyBonus],
+        currentTimestamp + BONUS_TOKEN_RELEASE_TIME
       ).should.be.fulfilled;
 
       let funderPostBalance = await this.token.balanceOf(funder);
@@ -785,6 +789,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
         [funder, thirdParty],
         [vestAmount_funder, vestAmount_thirdParty],
         [vestAmount_funder.div(10), vestAmount_thirdParty.div(10)],
+        currentTimestamp + BONUS_TOKEN_RELEASE_TIME,
         {from: thirdParty}
       ).should.be.rejected;
     });
@@ -811,6 +816,7 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
   });
 
   describe('Gas analysis for whitelisting & funding & token vesting & release', () => {
+    let currentTimestamp;
 
     beforeEach(async () => {
       let phaseStartTime = (await getCurrentTimestamp()) + 1;
@@ -825,6 +831,8 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
         SALE_PERIOD + phaseStartTime, 
         BONUS_RATE
       ).should.be.fulfilled;
+
+      currentTimestamp = await getCurrentTimestamp();
 
       // Wind EVM time forward so that the sale starts
       await increaseTime(20);
@@ -877,7 +885,8 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
       await this.crowdsale.deliverPurchasedTokensManually(
         [funder],
         [vestAmount_funder],
-        [calculateBonus(vestAmount_funder, BONUS_RATE)]
+        [calculateBonus(vestAmount_funder, BONUS_RATE)],
+        currentTimestamp + BONUS_TOKEN_RELEASE_TIME
       ).should.be.fulfilled;
     });
 
@@ -888,7 +897,8 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
         [
           calculateBonus(vestAmount_funder, BONUS_RATE),
           calculateBonus(vestAmount_thirdParty, BONUS_RATE)
-        ]
+        ],
+        currentTimestamp + BONUS_TOKEN_RELEASE_TIME
       ).should.be.fulfilled;
     });
 
@@ -900,7 +910,8 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
           calculateBonus(vestAmount_funder, BONUS_RATE),
           calculateBonus(vestAmount_thirdParty, BONUS_RATE),
           calculateBonus(vestAmount_thirdPartyAlt, BONUS_RATE)
-        ]
+        ],
+        currentTimestamp + BONUS_TOKEN_RELEASE_TIME
       ).should.be.fulfilled;
     });
 

@@ -1,16 +1,13 @@
-require('dotenv').config();
-
 const SpinToken = artifacts.require("./SpinToken.sol");
 const SpinCrowdsale = artifacts.require("./SpinCrowdsale.sol");
 
 const name = "SPIN Protocol";
 const symbol = "SPIN";
 const decimals = 18;
-const initialSupply = 1250000000;
+const initialSupply = 1075000000;
 
 // TODO: Change this parameters in mainnet deployment
 const rate = 10000  // 1 ETH = 10,000 SPIN token
-const wallet = process.env.FUND_COLLECTOR_ADDRESS;
 const totalSaleCap = 100 * Math.pow(10, 18); // 100 ETH
 
 
@@ -33,37 +30,34 @@ const SPIN_TOKEN_ADDRESS_ASPEN = '0x760e61a237adfe8169887e160eca8c2ca80e2aac';
 
 // Deployer
 const TokenContractDeployer = (deployer, network) => {
-  if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'klaytn-aspen') {
     deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
       .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
-  } else if (network === 'mainnet') {
-    // TODO: Implement
-  } else {
-    throw new Error('Unknown network!');
-  }
 };
 
 
 /*************SPIN Crowdsale***************/
-// Mainnet - Ethereum
-// Mainnet deployment of SPIN Crowdsale contract
-// @see https://etherscan.io/0x
-// const SPIN_CROWDSALE_ADDRESS = '';
+/*
+  Mainnet - Ethereum
+  Mainnet deployment of SPIN Crowdsale contract
+  @see https://etherscan.io/0x
 
-// Rinkeby & Ropsten - Ethereum
-// Testnet deployment of SPIN Crowdsale contract
-// @see https://ropsten.etherscan.io/0x31ae85cf5bd649d42b00094c8c1c919c3d9f5df1
-// const SPIN_CROWDSALE_ADDRESS = '0x31ae85cf5bd649d42b00094c8c1c919c3d9f5df1';
-// @see https://rinkeby.etherscan.io/0xb9aaa48cfb66aa239974c1da53fe0e45377f5ae7
-// const SPIN_CROWDSALE_ADDRESS = '0xb9aaa48cfb66aa239974c1da53fe0e45377f5ae7';
+  Rinkeby & Ropsten - Ethereum
+  Testnet deployment of SPIN Crowdsale contract
+  @see https://ropsten.etherscan.io/0x31ae85cf5bd649d42b00094c8c1c919c3d9f5df1
+  @see https://rinkeby.etherscan.io/0xb9aaa48cfb66aa239974c1da53fe0e45377f5ae7
 
-// Aspen - Klaytn
-// Testnet deployment of SPIN Crowdsale contract
-// const SPIN_CROWDSALE_ADDRESS = '0xe24abde016cd48b867cb9da8aadde869b5f2df08';
+  Aspen - Klaytn
+  Testnet deployment of SPIN Crowdsale contract
+  SPIN_CROWDSALE_ADDRESS = '0xe24abde016cd48b867cb9da8aadde869b5f2df08';
+*/
 
 // Deployer
 const SaleContractDeployer = (deployer, network) => {
-  deployer.deploy(SpinCrowdsale, rate, wallet, getTokenAddress(network), totalSaleCap)
+  if (!process.env.FUND_COLLECTOR_ADDRESS) {
+    throw new Error('FUND_COLLECTOR_ADDRESS environment variable is not set or empty!');
+  }
+
+  deployer.deploy(SpinCrowdsale, rate, process.env.FUND_COLLECTOR_ADDRESS, getTokenAddress(network), totalSaleCap)
     .then( _ => console.log(`SPIN Crowdsale contract has been deployed successfully on ${network}.`));
 };
 
@@ -86,6 +80,11 @@ function getTokenAddress(network) {
 }
 
 module.exports = (deployer, network) => {
+  if (network === 'test') {
+    console.log('Deployed contracts for unit testing on test network...');
+    return;
+  }
+
   // TokenContractDeployer(deployer, network);
   SaleContractDeployer(deployer, network);
 }

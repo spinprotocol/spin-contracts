@@ -101,19 +101,31 @@ contract SpinCrowdsale is Crowdsale, CappedCrowdsale, PhasedCrowdsale, Lockable,
   /**
    * @dev Locks sale tokens manually for the purchases done through thirdparty ICO platforms
    * @param beneficiaries address to which tokens are to be transfered
-   * @param tokenAmounts Number of tokens to be transfered and locked
-   * @param bonusAmounts Bonus tokens for the purchase
+   * @param tokenAmounts Number of tokens to be transfered
+   * @param bonusAmounts Bonus tokens for the purchase to be locked
+   * @param bonusExpiry Expiry date of bonus tokens to be locked
    */
   function deliverPurchasedTokensManually(
     address[] beneficiaries, 
     uint256[] tokenAmounts, 
-    uint256[] bonusAmounts
+    uint256[] bonusAmounts,
+    uint256 bonusExpiry
   )
     external
     onlyAdmin
   {
     for (uint256 i = 0; i < beneficiaries.length; i++) {
-      _deliverPurchasedTokens(beneficiaries[i], tokenAmounts[i], bonusAmounts[i]);
+      // Check if the contract has enough tokens which are not locked
+      require(
+        token().balanceOf(address(this)) >= getTotalLockedAmount().add(tokenAmounts[i]),
+        'Insufficient token balance!'
+      );
+      // Send the purchased tokens immediately
+      require(token().transfer(beneficiaries[i], tokenAmounts[i]), 'Token transfer failed');
+
+      if (bonusAmounts[i] > 0) {
+        _lock(beneficiaries[i], _REASON_BONUS, bonusAmounts[i], bonusExpiry);
+      }
     }
   }
 
