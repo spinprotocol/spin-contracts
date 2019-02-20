@@ -15,12 +15,12 @@ const totalSaleCap = 100 * Math.pow(10, 18); // 100 ETH
 // Mainnet - Ethereum
 // Mainnet deployment of SPIN Token contract
 // @see https://etherscan.io/token/0x???
-const SPIN_TOKEN_ADDRESS_MAINNET = '';
+const SPIN_TOKEN_ADDRESS_MAINNET = '0x4f22310c27ef39feaa4a756027896dc382f0b5e2';
 
 // Rinkeby & Ropsten - Ethereum
 // Testnet deployment of SPIN Token contract
 // @see https://ropsten.etherscan.io/token/0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba
-const SPIN_TOKEN_ADDRESS_ROPSTEN = '0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba';
+const SPIN_TOKEN_ADDRESS_ROPSTEN = '0x4f22310c27ef39feaa4a756027896dc382f0b5e2';
 // @see https://rinkeby.etherscan.io/token/0xd97243b693c3173b165e975fc0bc1590e6acee15
 const SPIN_TOKEN_ADDRESS_RINKEBY = '0xd97243b693c3173b165e975fc0bc1590e6acee15';
 
