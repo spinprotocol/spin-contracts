@@ -379,6 +379,25 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
       actualLockedAmount.should.be.bignumber.equal(0);
     });
 
+    it('gets lock details', async () => {
+      await this.crowdsale.lock([funder], [lockReason], [lockedAmount], [lockExpiryDate]).should.be.fulfilled;
+
+      // Check the total number of locked tokens in this contract after a new lock
+      currentTotalLockedTokens = await this.crowdsale.getTotalLockedAmount();
+      currentTotalLockedTokens.should.be.bignumber.equal(initialTotalLockedTokens.add(lockedAmount));
+
+      // Check the actually locked tokens
+      let actualLockedAmount = await this.crowdsale.tokensLocked(funder, lockReason);
+      actualLockedAmount.should.be.bignumber.equal(lockedAmount);
+
+      // Check the locked tokens after lock period
+      let details = await this.crowdsale.getLockDetails(funder);
+      console.log('Reasons', details[0]);
+      console.log('Amounts', details[1]);
+      console.log('Validities', details[2]);
+      console.log('Status', details[3]);
+    });
+
     it('unlocks tokens', async () => {
       let funderPreBalance = await this.token.balanceOf(funder);
 

@@ -256,4 +256,25 @@ contract Lockable {
   function getTotalLockedAmount() public view returns (uint256) {
     return totalLockedAmount;
   }
+
+  /**
+   * @dev Returns details of all the locked tokens for a given address
+   */
+  function getLockDetails(address lockee) public view returns (bytes32[], uint256[], uint256[], bool[]) {
+    bytes32[] memory reasons = lockReason[lockee];
+    uint256[] memory  amounts = new uint256[](lockReason[lockee].length);
+    uint256[] memory validities = new uint256[](lockReason[lockee].length);
+    bool[] memory claimStatus = new bool[](lockReason[lockee].length);
+
+    for (uint256 i = 0; i < lockReason[lockee].length; i++) {
+      bytes32 reason = lockReason[lockee][i];
+      lockToken token = locked[lockee][reason];
+
+      amounts[i] = token.amount;
+      validities[i] = token.validity;
+      claimStatus[i] = token.claimed;
+    }
+
+    return (reasons, amounts, validities, claimStatus);
+  }
 }
