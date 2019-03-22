@@ -44,7 +44,7 @@ const TokenContractDeployer = (deployer, network) => {
   Rinkeby & Ropsten - Ethereum
   Testnet deployment of SPIN Crowdsale contract
   @see https://ropsten.etherscan.io/0x31ae85cf5bd649d42b00094c8c1c919c3d9f5df1
-  @see https://rinkeby.etherscan.io/0xb9aaa48cfb66aa239974c1da53fe0e45377f5ae7
+  @see https://rinkeby.etherscan.io/0xb1a8b1597c32dae4a25fae75afbdffb1cc821d28
 
   Aspen - Klaytn
   Testnet deployment of SPIN Crowdsale contract
