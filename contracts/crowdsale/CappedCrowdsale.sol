@@ -47,6 +47,18 @@ contract CappedCrowdsale is Crowdsale, AdminRole {
   }
 
   /**
+   * @dev Sets total sale cap in wei
+   * @param totalSaleCap Sale cap in wei
+   */
+  function setTotalSaleCap(uint256 totalSaleCap)
+    external
+    onlyAdmin
+  {
+    require(totalSaleCap >= 0, "Total sale cannot be negative");
+    _totalSaleCap = totalSaleCap;
+  }
+
+  /**
    * @dev Returns the total sale cap
    * @return total sale cap
    */

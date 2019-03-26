@@ -318,8 +318,20 @@ contract('SpinCrowdsale', ([creator, wallet, funder, thirdParty, thirdPartyAlt, 
       caps[1].should.be.bignumber.equal(ether(5));
     });
 
+    it('sets total sale cap', async () => {
+      await this.crowdsale.setTotalSaleCap(ether(200));
+
+      // Validate with actual total sale cap
+      let cap = await this.crowdsale.getTotalSaleCap();
+      cap.should.be.bignumber.equal(ether(200));
+    });
+
     it('does not allow an unauthorized address to set individual caps', async () => {
       await this.crowdsale.setIndividualCaps(ether(1), ether(5), {from: thirdParty}).should.be.rejected;
+    });
+
+    it('does not allow an unauthorized address to set total sale cap', async () => {
+      await this.crowdsale.setTotalSaleCap(ether(100), {from: thirdParty}).should.be.rejected;
     });
 
     it('does not allow to make a purchase less than the minimum cap', async () => {
