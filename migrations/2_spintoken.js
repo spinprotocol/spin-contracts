@@ -7,8 +7,8 @@ const decimals = 18;
 const initialSupply = 1075000000;
 
 // TODO: Change this parameters in mainnet deployment
-const rate = 10000  // 1 ETH = 10,000 SPIN token
-const totalSaleCap = 100 * Math.pow(10, 18); // 100 ETH
+const rate = 21935.9375  // 1 ETH = 21,935.9375 SPIN token
+const totalSaleCap = 2279.36463 * Math.pow(10, 18); // 2,279.36463 ETH
 
 
 /*************SPIN Token***************/
