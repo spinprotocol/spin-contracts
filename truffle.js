@@ -13,7 +13,7 @@ module.exports = {
       provider: providerFactory('mainnet'),
       network_id: 1,
       gas: 7000000,
-      gasPrice: 100000000000 // 100 Gwei, Change this value according to price average of the deployment time
+      gasPrice: 50000000000 // 100 Gwei, Change this value according to price average of the deployment time
     },
     'ropsten': {
       provider: providerFactory('ropsten'),
