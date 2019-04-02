@@ -1,5 +1,6 @@
 const SpinToken = artifacts.require("./SpinToken.sol");
 const SpinCrowdsale = artifacts.require("./SpinCrowdsale.sol");
+const SpinAirdrop = artifacts.require("./SpinAirdrop.sol");
 
 const name = "SPIN Protocol";
 const symbol = "SPIN";
@@ -79,6 +80,30 @@ function getTokenAddress(network) {
   }
 }
 
+
+/*************SPIN Airdrop***************/
+/*
+  Mainnet - Ethereum
+  Mainnet deployment of SPIN Crowdsale contract
+  @see https://etherscan.io/0x
+
+  Rinkeby & Ropsten - Ethereum
+  Testnet deployment of SPIN Airdrop contract
+  @see https://ropsten.etherscan.io/
+  @see https://rinkeby.etherscan.io/0x73239b5c1c8796f31c2ab2a540c6c2addc1b38d2
+
+  Aspen - Klaytn
+  Testnet deployment of SPIN Airdrop contract
+  SPIN_AIRDROP_ADDRESS = '';
+*/
+
+// Airdrop Contract Deployer
+const AirdropContractDeployer = (deployer, network) => {
+  deployer.deploy(SpinAirdrop, getTokenAddress(network))
+    .then( _ => console.log(`SPIN Airdrop contract has been deployed successfully on ${network}.`));
+};
+
+
 module.exports = (deployer, network) => {
   if (network === 'test') {
     console.log('Deployed contracts for unit testing on test network...');
@@ -86,5 +111,6 @@ module.exports = (deployer, network) => {
   }
 
   // TokenContractDeployer(deployer, network);
-  SaleContractDeployer(deployer, network);
+  // SaleContractDeployer(deployer, network);
+  AirdropContractDeployer(deployer, network);
 }
