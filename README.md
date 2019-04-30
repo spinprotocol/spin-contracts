@@ -2,7 +2,7 @@
 Smart-contracts for SPIN Protocol platform
 
 
-## Deployment
+## Deployment - Ethereum
 1. First uncomment the deployer function corresponds to the contract you want to deploy and comment out all the others in `migrations/2_spintoken.js` file.
 2. If the project folder includes `build` folder, first delete it
 3. Compile the corresponding contract as follows;
@@ -14,6 +14,17 @@ Smart-contracts for SPIN Protocol platform
 6. Also set fund collector address as follows;
 `export FUND_COLLECTOR_ADDRESS="<fund_collector_address>"`
 7. Finally deploy the contract on the network you desire
+`truffle migrate --network <network_name>`
+
+
+## Deployment - Kalytn
+1. First uncomment the deployer function corresponds to the contract you want to deploy and comment out all the others in `migrations/2_spintoken.js` file.
+2. If the project folder includes `build` folder, first delete it
+3. Compile the corresponding contract as follows;
+`truffle compile`
+4. Set privatekey words for deployer in your command line as follows;
+`export PRIVATEKEY="<private_key>"`
+5. Finally deploy the contract on the network you desire
 `truffle migrate --network <network_name>`
 
 
