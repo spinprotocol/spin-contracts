@@ -1,24 +1,22 @@
-require('dotenv').config();
-
 const SpinToken = artifacts.require("./SpinToken.sol");
 const SpinCrowdsale = artifacts.require("./SpinCrowdsale.sol");
+const SpinAirdrop = artifacts.require("./SpinAirdrop.sol");
 
 const name = "SPIN Protocol";
 const symbol = "SPIN";
 const decimals = 18;
-const initialSupply = 1250000000;
+const initialSupply = 1075000000;
 
 // TODO: Change this parameters in mainnet deployment
-const rate = 10000  // 1 ETH = 10,000 SPIN token
-const wallet = process.env.FUND_COLLECTOR_ADDRESS;
-const totalSaleCap = 100 * Math.pow(10, 18); // 100 ETH
+const rate = 21935.9375  // 1 ETH = 21,935.9375 SPIN token
+const totalSaleCap = 2279.36463 * Math.pow(10, 18); // 2,279.36463 ETH
 
 
 /************* SPIN Token deployed information ***************/
 
 // Mainnet - Ethereum
 // @see https://etherscan.io/token/0x???
-const SPIN_TOKEN_ADDRESS_MAINNET = '';
+const SPIN_TOKEN_ADDRESS_MAINNET = '0x4f22310c27ef39feaa4a756027896dc382f0b5e2';
 
 // Rinkeby - Ethereum
 // @see https://ropsten.etherscan.io/token/0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba

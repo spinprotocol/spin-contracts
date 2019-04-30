@@ -3,7 +3,7 @@ const PrivateKeyConnector = require('connect-privkey-to-provider');
 
 const providerFactory4Ethereum = network => new HDWalletProvider(
   process.env.MNEMONICS || '',                                  // Mnemonic of the deployer
-  `https://${network}.infura.io/${process.env.INFURA_API_KEY}`  // Provider URL => web3.HttpProvider
+  `https://${network}.infura.io/v3/${process.env.INFURA_API_KEY}`  // Provider URL => web3.HttpProvider
 );
 
 const providerFactory4Klaytn = network => new PrivateKeyConnector(
@@ -19,8 +19,8 @@ module.exports = {
     'mainnet': {
       provider: providerFactory4Ethereum('mainnet'),
       network_id: 1,
-      gas: 8000000,
-      gasPrice: 100000000000 // 100 Gwei, Change this value according to price average of the deployment time
+      gas: 7000000,
+      gasPrice: 50000000000 // 100 Gwei, Change this value according to price average of the deployment time
     },
     'ropsten': {
       provider: providerFactory4Ethereum('ropsten'),
