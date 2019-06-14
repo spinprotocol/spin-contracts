@@ -2,6 +2,7 @@
   "name": "spin-contracts",
   "version": "1.0.0",
   "description": "SPIN Protocol Smart Contract",
+  "main": "truffle.js",
   "directories": {
     "test": "test"
   },
