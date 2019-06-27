@@ -1,12 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
 
-contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable {
+contract SpinToken is ERC20Detailed, ERC20Pausable, ERC20Burnable {
   /**
    * @dev constructor to mint initial tokens
    * @param name string
@@ -25,6 +24,6 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
   {
     // Mint the initial supply
     require(initialSupply > 0, "initialSupply must be greater than zero.");
-    mint(msg.sender, initialSupply * (10 ** uint256(decimals)));
+    _mint(msg.sender, initialSupply * (10 ** uint256(decimals)));
   }
 }
