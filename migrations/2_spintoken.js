@@ -10,6 +10,7 @@ const initialSupply = 1075000000;
 // TODO: Change this parameters in mainnet deployment
 const rate = 21935.9375  // 1 ETH = 21,935.9375 SPIN token
 const totalSaleCap = 2279.36463 * Math.pow(10, 18); // 2,279.36463 ETH
+const wallet = process.env.FUND_COLLECTOR_ADDRESS;
 
 
 /************* SPIN Token deployed information ***************/
@@ -31,8 +32,9 @@ const SPIN_TOKEN_ADDRESS_RINKEBY = '0xd97243b693c3173b165e975fc0bc1590e6acee15';
 const SPIN_TOKEN_ADDRESS_KLAYTN_MAINNET = '';
 
 // Baobab - Klaytn
-// @see https://baobab.klaytnscope.com/account/0x91d47fe9c5d892851060d6db6b31d264bb8a4d1b
-const SPIN_TOKEN_ADDRESS_BAOBAB = '0x91d47fe9c5d892851060d6db6b31d264bb8a4d1b';
+// @see https://baobab.klaytnscope.com/account/0x6071bacfea19df27cd685c9f957a6a19376a62ad
+const SPIN_TOKEN_ADDRESS_BAOBAB = '0x6071bacfea19df27cd685c9f957a6a19376a62ad';
+// before: 0x91d47fe9c5d892851060d6db6b31d264bb8a4d1b
 
 // Aspen - Klaytn
 // @see https://baobab.klaytnscope.com/account/0x760e61a237adfe8169887e160eca8c2ca80e2aac
@@ -70,31 +72,48 @@ const TokenContractDeployer = (deployer, network) => {
 // Aspen - Klaytn
 // const SPIN_CROWDSALE_ADDRESS = '0xe24abde016cd48b867cb9da8aadde869b5f2df08';
 
-// Deployer
-// const SaleContractDeployer = (deployer, network) => {
-//   deployer.deploy(SpinCrowdsale, rate, wallet, getTokenAddress(network), totalSaleCap)
-//     .then( _ => console.log(`SPIN Crowdsale contract has been deployed successfully on ${network}.`));
-// };
+// Baobab - Klaytn
+// const SPIN_CROWDSALE_ADDRESS = '0xf918d63643c86c6f51d1930cdf166d97382adb89';
 
-// function getTokenAddress(network) {
-//   switch (network) {
-//     case 'mainnet':
-//     case 'homestead':
-//       return SPIN_TOKEN_ADDRESS_MAINNET;
-//     case 'ropsten':
-//       return SPIN_TOKEN_ADDRESS_ROPSTEN;
-//     case 'rinkeby':
-//       return SPIN_TOKEN_ADDRESS_RINKEBY;
-//     case 'kovan':
-//       return SPIN_TOKEN_ADDRESS_KOVAN;
-//     case 'klaytn-baobab':
-//       return SPIN_TOKEN_ADDRESS_BAOBAB;
-//     case 'klaytn-mainnet':
-//       return SPIN_TOKEN_ADDRESS_KLAYTN_MAINNET;
-//     default:
-//       throw new Error('Unknown network!');
-//   }
-// }
+// Deployer
+const SaleContractDeployer = (deployer, network) => {
+  deployer.deploy(SpinCrowdsale, rate, wallet, getTokenAddress(network), totalSaleCap)
+    .then( _ => console.log(`SPIN Crowdsale contract has been deployed successfully on ${network}.`));
+};
+
+function getTokenAddress(network) {
+  switch (network) {
+    case 'mainnet':
+    case 'homestead':
+      return SPIN_TOKEN_ADDRESS_MAINNET;
+    case 'ropsten':
+      return SPIN_TOKEN_ADDRESS_ROPSTEN;
+    case 'rinkeby':
+      return SPIN_TOKEN_ADDRESS_RINKEBY;
+    case 'kovan':
+      return SPIN_TOKEN_ADDRESS_KOVAN;
+    case 'klaytn-baobab':
+      return SPIN_TOKEN_ADDRESS_BAOBAB;
+    case 'klaytn-mainnet':
+      return SPIN_TOKEN_ADDRESS_KLAYTN_MAINNET;
+    default:
+      throw new Error('Unknown network!');
+  }
+}
+
+
+/************* SPIN Airdrop deployed information ***************/
+
+// Baobab - Klaytn
+// const SPIN_AIRDROP_ADDRESS = '0xf04bc4b0f3335541884b148d389a94bf97abba8b';
+
+// Deployer
+const AirdropContractDeployer = (deployer, network) => {
+  deployer.deploy(SpinAirdrop, getTokenAddress(network))
+    .then( _ => console.log(`SPIN Airdrop contract has been deployed successfully on ${network}.`));
+};
+
+
 
 /*****************************************************************/
 
@@ -102,10 +121,15 @@ module.exports = (deployer, network) => {
   /**
    * Token contract deploy.
    */
-  TokenContractDeployer(deployer, network);
+  // TokenContractDeployer(deployer, network);
 
   /**
    * Sale contract deploy.
    */
   // SaleContractDeployer(deployer, network);
+
+  /**
+   * Sale contract deploy.
+   */
+  AirdropContractDeployer(deployer, network);
 }
