@@ -44,21 +44,20 @@ module.exports = {
     /**
      * Klaytn Network
      */
+    'cypress': {
+      provider: providerFactory4Klaytn('cypress'),
+      port: 8651,
+      network_id: '8217',
+      gas: 20000000,
+      gasPrice: null,
+    },
     'baobab': {
       provider: providerFactory4Klaytn('baobab'),
       port: 8651,
       network_id: '1001',
       gas: 20000000,
       gasPrice: null,
-    },
-    // 'cypress': {
-    //   provider: providerFactory4Klaytn('cypress'),
-    //   port: 8651,
-    //   network_id: '8217',
-    //   gas: 20000000,
-    //   gasPrice: null,
-    // },
-
+    }
   },
   compilers: {
     solc: {

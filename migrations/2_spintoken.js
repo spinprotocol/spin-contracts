@@ -33,7 +33,7 @@ const SPIN_TOKEN_ADDRESS_CYPRESS = '';
 
 // Baobab - Klaytn
 // @see https://baobab.klaytnscope.com/account/0x6071bacfea19df27cd685c9f957a6a19376a62ad
-const SPIN_TOKEN_ADDRESS_BAOBAB = '* 0x91ff129832b7a8ef5c7d177652391d50a2d517a9';
+const SPIN_TOKEN_ADDRESS_BAOBAB = '0x91ff129832b7a8ef5c7d177652391d50a2d517a9';
 // before: 0x91d47fe9c5d892851060d6db6b31d264bb8a4d1b
 
 // Aspen - Klaytn
@@ -73,7 +73,7 @@ const TokenContractDeployer = (deployer, network) => {
 // const SPIN_CROWDSALE_ADDRESS = '0xe24abde016cd48b867cb9da8aadde869b5f2df08';
 
 // Baobab - Klaytn
-// const SPIN_CROWDSALE_ADDRESS = '0xf918d63643c86c6f51d1930cdf166d97382adb89';
+// const SPIN_CROWDSALE_ADDRESS = '0x03e9e6f2d36b6c586eb807060412f66a0e847cdb';
 
 // Deployer
 const SaleContractDeployer = (deployer, network) => {
@@ -126,10 +126,10 @@ module.exports = (deployer, network) => {
   /**
    * Sale contract deploy.
    */
-  SaleContractDeployer(deployer, network);
+  // SaleContractDeployer(deployer, network);
 
   /**
    * Sale contract deploy.
    */
-  // AirdropContractDeployer(deployer, network);
+  AirdropContractDeployer(deployer, network);
 }
