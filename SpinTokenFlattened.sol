@@ -408,81 +408,6 @@ library Roles {
   }
 }
 
-// File: openzeppelin-solidity/contracts/access/roles/MinterRole.sol
-
-pragma solidity ^0.4.24;
-
-
-contract MinterRole {
-  using Roles for Roles.Role;
-
-  event MinterAdded(address indexed account);
-  event MinterRemoved(address indexed account);
-
-  Roles.Role private minters;
-
-  constructor() internal {
-    _addMinter(msg.sender);
-  }
-
-  modifier onlyMinter() {
-    require(isMinter(msg.sender));
-    _;
-  }
-
-  function isMinter(address account) public view returns (bool) {
-    return minters.has(account);
-  }
-
-  function addMinter(address account) public onlyMinter {
-    _addMinter(account);
-  }
-
-  function renounceMinter() public {
-    _removeMinter(msg.sender);
-  }
-
-  function _addMinter(address account) internal {
-    minters.add(account);
-    emit MinterAdded(account);
-  }
-
-  function _removeMinter(address account) internal {
-    minters.remove(account);
-    emit MinterRemoved(account);
-  }
-}
-
-// File: openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol
-
-pragma solidity ^0.4.24;
-
-
-
-/**
- * @title ERC20Mintable
- * @dev ERC20 minting logic
- */
-contract ERC20Mintable is ERC20, MinterRole {
-  /**
-   * @dev Function to mint tokens
-   * @param to The address that will receive the minted tokens.
-   * @param value The amount of tokens to mint.
-   * @return A boolean that indicates if the operation was successful.
-   */
-  function mint(
-    address to,
-    uint256 value
-  )
-    public
-    onlyMinter
-    returns (bool)
-  {
-    _mint(to, value);
-    return true;
-  }
-}
-
 // File: openzeppelin-solidity/contracts/access/roles/PauserRole.sol
 
 pragma solidity ^0.4.24;
@@ -693,8 +618,7 @@ pragma solidity ^0.4.24;
 
 
 
-
-contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable {
+contract SpinToken is ERC20Detailed, ERC20Pausable, ERC20Burnable {
   /**
    * @dev constructor to mint initial tokens
    * @param name string
@@ -713,6 +637,6 @@ contract SpinToken is ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable
   {
     // Mint the initial supply
     require(initialSupply > 0, "initialSupply must be greater than zero.");
-    mint(msg.sender, initialSupply * (10 ** uint256(decimals)));
+    _mint(msg.sender, initialSupply * (10 ** uint256(decimals)));
   }
 }

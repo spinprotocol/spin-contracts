@@ -160,19 +160,19 @@ contract('SpinToken', ([creator, receiver, thirdParty]) => {
     });
   });
 
-  describe('ERC20::Mintable Token', () => {
-    it('only minter can mint', async () => {
-      // Try to mint as `creator` which is a minter indeed
-      await this.token.mint(receiver, transferAmount, {from: creator}).should.be.fulfilled;
-      // Amounts of token minted to the corresponding address should be equal to that address' post balance
-      (await this.token.balanceOf(receiver)).should.be.bignumber.equal(transferAmount);
-    });
+  // describe('ERC20::Mintable Token', () => {
+  //   it('only minter can mint', async () => {
+  //     // Try to mint as `creator` which is a minter indeed
+  //     await this.token.mint(receiver, transferAmount, {from: creator}).should.be.fulfilled;
+  //     // Amounts of token minted to the corresponding address should be equal to that address' post balance
+  //     (await this.token.balanceOf(receiver)).should.be.bignumber.equal(transferAmount);
+  //   });
 
-    it('reverts minting tx from an unauhtorized account', async () => {
-      // Try to mint some tokens to `receiver` as `receiver`
-      await this.token.mint(receiver, transferAmount, {from: receiver}).should.be.rejected;
-    });
-  });
+  //   it('reverts minting tx from an unauhtorized account', async () => {
+  //     // Try to mint some tokens to `receiver` as `receiver`
+  //     await this.token.mint(receiver, transferAmount, {from: receiver}).should.be.rejected;
+  //   });
+  // });
 
   describe('ERC20::Burnable Token', () => {
     let creatorPreBalance;

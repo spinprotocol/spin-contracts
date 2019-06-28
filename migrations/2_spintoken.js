@@ -8,8 +8,8 @@ const decimals = 18;
 const initialSupply = 1075000000;
 
 // TODO: Change this parameters in mainnet deployment
-const rate = 21935.9375  // 1 ETH = 21,935.9375 SPIN token
-const totalSaleCap = 2279.36463 * Math.pow(10, 18); // 2,279.36463 ETH
+const rate = 21935  // 1 ETH = 21,935.9375 SPIN token
+const totalSaleCap = 2279 * Math.pow(10, 18); // 2,279.36463 ETH
 const wallet = process.env.FUND_COLLECTOR_ADDRESS;
 
 
@@ -29,11 +29,11 @@ const SPIN_TOKEN_ADDRESS_RINKEBY = '0xd97243b693c3173b165e975fc0bc1590e6acee15';
 
 // Mainnet - Klaytn
 // @see https://baobab.klaytnscope.com/account/0x
-const SPIN_TOKEN_ADDRESS_KLAYTN_MAINNET = '';
+const SPIN_TOKEN_ADDRESS_CYPRESS = '';
 
 // Baobab - Klaytn
 // @see https://baobab.klaytnscope.com/account/0x6071bacfea19df27cd685c9f957a6a19376a62ad
-const SPIN_TOKEN_ADDRESS_BAOBAB = '0x6071bacfea19df27cd685c9f957a6a19376a62ad';
+const SPIN_TOKEN_ADDRESS_BAOBAB = '* 0x91ff129832b7a8ef5c7d177652391d50a2d517a9';
 // before: 0x91d47fe9c5d892851060d6db6b31d264bb8a4d1b
 
 // Aspen - Klaytn
@@ -42,10 +42,10 @@ const SPIN_TOKEN_ADDRESS_ASPEN = '0x760e61a237adfe8169887e160eca8c2ca80e2aac';
 
 // Deployer
 const TokenContractDeployer = (deployer, network) => {
-  if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'klaytn-baobab') {
+  if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'baobab') {
     deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
       .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
-  } else if (network === 'mainnet' || network === 'klaytn-mainnet') {
+  } else if (network === 'mainnet' || network === 'cypress') {
     // TODO: Implement
   } else {
     throw new Error('Unknown network!');
@@ -92,10 +92,10 @@ function getTokenAddress(network) {
       return SPIN_TOKEN_ADDRESS_RINKEBY;
     case 'kovan':
       return SPIN_TOKEN_ADDRESS_KOVAN;
-    case 'klaytn-baobab':
+    case 'baobab':
       return SPIN_TOKEN_ADDRESS_BAOBAB;
-    case 'klaytn-mainnet':
-      return SPIN_TOKEN_ADDRESS_KLAYTN_MAINNET;
+    case 'cypress':
+      return SPIN_TOKEN_ADDRESS_CYPRESS;
     default:
       throw new Error('Unknown network!');
   }
@@ -126,10 +126,10 @@ module.exports = (deployer, network) => {
   /**
    * Sale contract deploy.
    */
-  // SaleContractDeployer(deployer, network);
+  SaleContractDeployer(deployer, network);
 
   /**
    * Sale contract deploy.
    */
-  AirdropContractDeployer(deployer, network);
+  // AirdropContractDeployer(deployer, network);
 }
