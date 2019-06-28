@@ -42,11 +42,10 @@ const SPIN_TOKEN_ADDRESS_ASPEN = '0x760e61a237adfe8169887e160eca8c2ca80e2aac';
 
 // Deployer
 const TokenContractDeployer = (deployer, network) => {
-  if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'baobab') {
+  if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'baobab' // TestNet
+      || network === 'mainnet' || network === 'cypress') {                                              // MainNet
     deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
       .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
-  } else if (network === 'mainnet' || network === 'cypress') {
-    // TODO: Implement
   } else {
     throw new Error('Unknown network!');
   }
