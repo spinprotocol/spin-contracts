@@ -120,7 +120,7 @@ module.exports = (deployer, network) => {
   /**
    * Token contract deploy.
    */
-  // TokenContractDeployer(deployer, network);
+  TokenContractDeployer(deployer, network);
 
   /**
    * Sale contract deploy.
@@ -130,5 +130,5 @@ module.exports = (deployer, network) => {
   /**
    * Sale contract deploy.
    */
-  AirdropContractDeployer(deployer, network);
+  // AirdropContractDeployer(deployer, network);
 }
