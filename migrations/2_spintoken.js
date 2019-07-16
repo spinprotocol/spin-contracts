@@ -1,76 +1,134 @@
-require('dotenv').config();
-
 const SpinToken = artifacts.require("./SpinToken.sol");
 const SpinCrowdsale = artifacts.require("./SpinCrowdsale.sol");
+const SpinAirdrop = artifacts.require("./SpinAirdrop.sol");
 
 const name = "SPIN Protocol";
 const symbol = "SPIN";
 const decimals = 18;
-const initialSupply = 1250000000;
+const initialSupply = 1075000000;
 
 // TODO: Change this parameters in mainnet deployment
-const rate = 10000  // 1 ETH = 10,000 SPIN token
+const rate = 21935  // 1 ETH = 21,935.9375 SPIN token
+const totalSaleCap = 2279 * Math.pow(10, 18); // 2,279.36463 ETH
 const wallet = process.env.FUND_COLLECTOR_ADDRESS;
-const totalSaleCap = 100 * Math.pow(10, 18); // 100 ETH
 
-// Local testnet deployer
-module.exports = function(deployer) {
-  // Leave this blank to run unit tests
-}
 
-/*************SPIN Token***************/
+/************* SPIN Token deployed information ***************/
+
 // Mainnet - Ethereum
-// Mainnet deployment of SPIN Token contract
 // @see https://etherscan.io/token/0x???
-// const SPIN_TOKEN_ADDRESS = '';
+const SPIN_TOKEN_ADDRESS_MAINNET = '0x4f22310c27ef39feaa4a756027896dc382f0b5e2';
 
-// Rinkeby & Ropsten - Ethereum
-// Testnet deployment of SPIN Token contract
-// @see https://ropsten.etherscan.io/token/0x668d6d1a5be72dc477c630de38aaedc895e5019c
-// @see https://rinkeby.etherscan.io/token/0x668d6d1a5be72dc477c630de38aaedc895e5019c
-// const SPIN_TOKEN_ADDRESS = '0x668d6d1a5be72dc477c630de38aaedc895e5019c';
+// Rinkeby - Ethereum
+// @see https://ropsten.etherscan.io/token/0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba
+const SPIN_TOKEN_ADDRESS_ROPSTEN = '0x7ece7ebea80de3f16e3c0a36b49739ccf17978ba';
+
+// Ropsten - Ethereum
+// @see https://rinkeby.etherscan.io/token/0xd97243b693c3173b165e975fc0bc1590e6acee15
+const SPIN_TOKEN_ADDRESS_RINKEBY = '0xd97243b693c3173b165e975fc0bc1590e6acee15';
+
+// Mainnet - Klaytn
+// @see https://baobab.klaytnscope.com/account/0x
+const SPIN_TOKEN_ADDRESS_CYPRESS = '';
+
+// Baobab - Klaytn
+// @see https://baobab.klaytnscope.com/account/0x6071bacfea19df27cd685c9f957a6a19376a62ad
+const SPIN_TOKEN_ADDRESS_BAOBAB = '0x91ff129832b7a8ef5c7d177652391d50a2d517a9';
+// before: 0x91d47fe9c5d892851060d6db6b31d264bb8a4d1b
 
 // Aspen - Klaytn
-// Testnet deployment of SPIN Token contract
-//  const SPIN_TOKEN_ADDRESS = '0x9ed6f09f2977944884d46c69f5c78929188dbec7';
+// @see https://baobab.klaytnscope.com/account/0x760e61a237adfe8169887e160eca8c2ca80e2aac
+const SPIN_TOKEN_ADDRESS_ASPEN = '0x760e61a237adfe8169887e160eca8c2ca80e2aac';
 
 // Deployer
-// module.exports = (deployer, network) => {
-//   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'klaytn-aspen') {
-//     deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
-//       .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
-//   } else if (network === 'mainnet') {
-//     // TODO: Implement
-//   } else {
-//     console.error('Unknown network!');
-//   }
-// };
+const TokenContractDeployer = (deployer, network) => {
+  if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'baobab' // TestNet
+      || network === 'mainnet' || network === 'cypress') {                                              // MainNet
+    deployer.deploy(SpinToken, name, symbol, decimals, initialSupply)
+      .then( _ => console.log('SPIN Token contract has been deployed successfully.'));
+  } else {
+    throw new Error('Unknown network!');
+  }
+};
+
+/*************************************************************/
 
 
-/*************SPIN Crowdsale***************/
+/************* SPIN Crowdsale deployed information ***************/
+
 // Mainnet - Ethereum
-// Mainnet deployment of SPIN Crowdsale contract
-// @see https://etherscan.io/token/0x
+// @see https://etherscan.io/0x
 // const SPIN_CROWDSALE_ADDRESS = '';
 
-// Rinkeby & Ropsten - Ethereum
-// Testnet deployment of SPIN Crowdsale contract
-// @see https://ropsten.etherscan.io/token/0x85bbaffb26e22f185ab75f730c06d507c8862241
-// @see https://rinkeby.etherscan.io/token/0x289451Ad811c7091aba0Ae313afE126a75cBE62D
-// const SPIN_CROWDSALE_ADDRESS = '0x289451Ad811c7091aba0Ae313afE126a75cBE62D';
+// Rinkeby - Ethereum
+// @see https://ropsten.etherscan.io/0x289451ad811c7091aba0ae313afe126a75cbe62d
+// const SPIN_CROWDSALE_ADDRESS = '0x289451ad811c7091aba0ae313afe126a75cbe62d';
+
+// Ropsten - Ethereum
+// @see https://rinkeby.etherscan.io/0x3e1d06f5895db0eb24ce9b029a9e771a7878c798
+// const SPIN_CROWDSALE_ADDRESS = '0x3e1d06f5895db0eb24ce9b029a9e771a7878c798';
 
 // Aspen - Klaytn
-// Testnet deployment of SPIN Crowdsale contract
-// const SPIN_CROWDSALE_ADDRESS = '0x377e188453818a5b55641ccdc8f253f5314d003f';
+// const SPIN_CROWDSALE_ADDRESS = '0xe24abde016cd48b867cb9da8aadde869b5f2df08';
+
+// Baobab - Klaytn
+// const SPIN_CROWDSALE_ADDRESS = '0x03e9e6f2d36b6c586eb807060412f66a0e847cdb';
 
 // Deployer
-// module.exports = (deployer, network) => {
-//   if (network === 'ropsten' || network === 'rinkeby' || network === 'kovan' || network === 'klaytn-aspen') {
-//     deployer.deploy(SpinCrowdsale, rate, wallet, SPIN_TOKEN_ADDRESS, totalSaleCap)
-//     .then( _ => console.log('SPIN Crowdsale contract has been deployed successfully.'));
-//   } else if (network === 'mainnet') {
-//     // TODO: Implement
-//   } else {
-//     console.error('Unknown network!');
-//   }
-// };
+const SaleContractDeployer = (deployer, network) => {
+  deployer.deploy(SpinCrowdsale, rate, wallet, getTokenAddress(network), totalSaleCap)
+    .then( _ => console.log(`SPIN Crowdsale contract has been deployed successfully on ${network}.`));
+};
+
+function getTokenAddress(network) {
+  switch (network) {
+    case 'mainnet':
+    case 'homestead':
+      return SPIN_TOKEN_ADDRESS_MAINNET;
+    case 'ropsten':
+      return SPIN_TOKEN_ADDRESS_ROPSTEN;
+    case 'rinkeby':
+      return SPIN_TOKEN_ADDRESS_RINKEBY;
+    case 'kovan':
+      return SPIN_TOKEN_ADDRESS_KOVAN;
+    case 'baobab':
+      return SPIN_TOKEN_ADDRESS_BAOBAB;
+    case 'cypress':
+      return SPIN_TOKEN_ADDRESS_CYPRESS;
+    default:
+      throw new Error('Unknown network!');
+  }
+}
+
+
+/************* SPIN Airdrop deployed information ***************/
+
+// Baobab - Klaytn
+// const SPIN_AIRDROP_ADDRESS = '0xf04bc4b0f3335541884b148d389a94bf97abba8b';
+
+// Deployer
+const AirdropContractDeployer = (deployer, network) => {
+  deployer.deploy(SpinAirdrop, getTokenAddress(network))
+    .then( _ => console.log(`SPIN Airdrop contract has been deployed successfully on ${network}.`));
+};
+
+
+
+/*****************************************************************/
+
+module.exports = (deployer, network) => {
+  /**
+   * Token contract deploy.
+   */
+  TokenContractDeployer(deployer, network);
+
+  /**
+   * Sale contract deploy.
+   */
+  // SaleContractDeployer(deployer, network);
+
+  /**
+   * Sale contract deploy.
+   */
+  // AirdropContractDeployer(deployer, network);
+}

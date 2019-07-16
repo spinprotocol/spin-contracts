@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
-import "../token/ERC1132.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Crowdsale
@@ -20,7 +20,7 @@ contract Crowdsale is ReentrancyGuard {
   using SafeMath for uint256;
 
   // The token being sold
-  ERC1132 private _token;
+  IERC20 private _token;
 
   // Address where funds are collected
   address private _wallet;
@@ -56,7 +56,7 @@ contract Crowdsale is ReentrancyGuard {
    * @param wallet Address where collected funds will be forwarded to
    * @param token Address of the token being sold
    */
-  constructor(uint256 rate, address wallet, ERC1132 token) internal {
+  constructor(uint256 rate, address wallet, IERC20 token) internal {
     require(rate > 0);
     require(wallet != address(0));
     require(token != address(0));
@@ -83,7 +83,7 @@ contract Crowdsale is ReentrancyGuard {
   /**
    * @return the token being sold.
    */
-  function token() public view returns(ERC1132) {
+  function token() public view returns(IERC20) {
     return _token;
   }
 
@@ -243,5 +243,13 @@ contract Crowdsale is ReentrancyGuard {
   function _setRate(uint256 purchaseRate) internal {
     require(purchaseRate > 0);
     _rate = purchaseRate;
+  }
+
+  /**
+   * @param wallet New fund collector address
+   */
+  function _setWallet(address wallet) internal {
+    require(wallet != address(0));
+    _wallet = wallet;
   }
 }

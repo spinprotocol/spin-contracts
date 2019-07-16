@@ -14,10 +14,10 @@ contract Withdrawable {
   event EtherWithdraw(address indexed sendTo, uint256 amount);
 
   /**
-    * @dev Withdraws any kind of ERC20 compatible token
-    * @param token ERC20 The address of the token contract
-    * @param amount uint256 Amount of the token to be withdrawn
-    */
+   * @dev Withdraws any kind of ERC20 compatible token
+   * @param token ERC20 The address of the token contract
+   * @param amount uint256 Amount of the token to be withdrawn
+   */
   function _withdrawToken(address token, uint256 amount) internal {
 
     require(ERC20(token).transfer(msg.sender, amount));
@@ -25,9 +25,9 @@ contract Withdrawable {
   }
 
   /**
-    * @dev Withdraw ether
-    * @param amount uint256 Amount of ether to be withdrawn
-    */
+   * @dev Withdraw ether
+   * @param amount uint256 Amount of ether to be withdrawn
+   */
   function _withdrawEther(uint256 amount) internal {
     msg.sender.transfer(amount);
     emit EtherWithdraw(msg.sender, amount);

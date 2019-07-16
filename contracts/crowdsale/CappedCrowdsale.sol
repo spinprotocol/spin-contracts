@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Crowdsale.sol";
-import "./AdminRole.sol";
+import "../accessControl/AdminRole.sol";
 
 
 /**
@@ -44,6 +44,18 @@ contract CappedCrowdsale is Crowdsale, AdminRole {
     _maxIndividualCap = maxCap;
 
     emit IndividualCapsSet(minCap, maxCap);
+  }
+
+  /**
+   * @dev Sets total sale cap in wei
+   * @param totalSaleCap Sale cap in wei
+   */
+  function setTotalSaleCap(uint256 totalSaleCap)
+    external
+    onlyAdmin
+  {
+    require(totalSaleCap >= 0, "Total sale cannot be negative");
+    _totalSaleCap = totalSaleCap;
   }
 
   /**
